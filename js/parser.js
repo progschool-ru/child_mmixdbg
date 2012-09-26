@@ -1,8 +1,9 @@
 var MMIX_INSTRUCTIONS = ["LDB", "LDW", "LDT", "LDO", "LDBU", "LDWU", "LDTU", "LDOU", "LDHT", "LDA", "STB", "STW", "STT", "STO", "STBU", "STWU", "STTU", "STTOU", "STHT", "STCO", "ADD", "SUB", "MUL", "DIV", "ADDU", "SUBU", "MULU", "DIVU", "NEG", "NEGU", "SL", "SLU", "SR", "SRU", "CMP", "CMPU", "CSN", "CSZ", "CSP", "CSOD", "CSNN", "CSNZ", "CSNP", "CSEV", "ZSN", "ZSZ", "ZSP", "ZSOD", "ZSNN", "ZSNZ", "ZSNP", "ZSEV", "AND", "OR", "XOR", "ANDN", "ORN", "NAND", "NOR", "NXOR", "MUX", "SADD", "BDIF", "WDIF", "TDIF", "ODIF", "MOR", "MXOR", "FADD", "FSUB", "FMUL", "FDIV", "FREM", "FSQRT", "FINT", "FCMP", "FEQL", "FUN", "FCMPE", "FEQLE", "FUNE", "FIX", "FIXU", "FLOT", "FLOTU", "SFLOT", "SFLOTU", "LDSF", "STSF", "SETH", "SETMH", "SETML", "SETL", "INCH", "INCHM", "INCML", "INCL", "ORH", "ORMH", "ORML", "ORL", "ANDNH", "ANDNMH", "ANDNML", "ANDNL", "JMP", "GO", "BN", "BZ", "BP", "BOD", "BNN", "BNZ", "BNP", "BEV", "PBN", "PBZ", "PBP", "PBOD", "PBNN", "PBNZ", "PBNP", "PBEV", "PUSHJ", "PUSHGO", "POP", "SAVE", "UNSAVE", "LDUNC", "STUNC", "PRELD", "PREST", "PREGO", "SYNCID", "SYNCD", "SYNC", "CSWAP", "LDVTS", "TRIP", "TRAP", "RESUME", "GET", "PUT", "GETA", "SWYM"];
-var MMIX_KEYWORDS = ["IS", "LOC"] + MMIX_INSTRUCTIONS;
+//var MMIX_KEYWORDS = ["IS", "LOC"] + MMIX_INSTRUCTIONS;
+var MMIX_KEYWORDS = MMIX_INSTRUCTIONS; // stub
 
 function parsingError(description, lexem, line) {
-	return description + ": `" + lexem + "` at line `" + line + "`";
+	throw description + ": `" + lexem + "` at line `" + line + "`";
 }
 
 function regexCheckNumber(pretendNumber) {
@@ -24,9 +25,11 @@ function checkUserSpaceWord(pretendWord) {
 function checkExprParts(splitted) {
 	for (var i in splitted) {
 		var part = splitted[i];
-		if (regexCheckNumber(part) || regexCheckRegister(part) || checkUserSpaceWord(part) || eval("\"" + part + "\"") == part) {
+		if (regexCheckNumber(part) || regexCheckRegister(part) || checkUserSpaceWord(part)) {
 			// OK. stub
-		} else 
+		} else if ("\"" + eval(part) + "\"" == part) {
+			// OK. stub
+		} else
 			parsingError("Unrecognized lexem in EXPR", part, splitted.join(", "));
 	}
 
@@ -39,16 +42,17 @@ function parseExpr(expr) {
 	var fromIndex = 0;
 	var inString = false,
 		quoting = false;
-	for (var i = 0; i < expt.length; ++i) {
+	for (var i = 0; i < expr.length; ++i) {
 		if (inString) {
 			if (expr[i] == "\\")
 				quoting = true;
-			else if (expr[i] == '"') {
+			else if (expr[i] == "\"") {
 				if (quoting)
 					quoting = false;
 				else
 					inString = false;
 			}
+			continue;
 		}
 
 		if (expr[i] == ',') {
@@ -64,8 +68,10 @@ function parseExpr(expr) {
 			inString = true;
 		}
 	}
+	splitted.push(expr.substring(fromIndex));
 
-	checkExprParts(splitted);
+	//console.log("done parsing expression " + expr);
+//	checkExprParts(splitted);
 	return splitted;
 }
 
@@ -80,14 +86,19 @@ function parseLine(line) {
 	var realIndex = 0; // реальный индекс (с пропусками пустых сплитов)
 	for (var partKey in splitted) {
 		var part = splitted[partKey];
+		console.log("Parsing part " + part);
+		console.log("realIndex is " + realIndex);
 		if (part.length != 0) {
 			if (realIndex == 0) { 
-				if (checkUserSpaceWord(part)) // метка - первое слово
-					result.label = part;
-				else if (checkReservedWord(part)) // операнд - первое слово
+				if (checkReservedWord(part)) {
 					result.operand = part;
-				else // первое слово не опреранд и не метка
+					console.log("  First is reserved");
+				} else if (checkUserSpaceWord(part)) { // метка - первое слово
+					result.label = part;
+					console.log("  First is user-space");
+				} else { // первое слово не опреранд и не метка
 					throw parsingError("Unrecognized lexem", part, line);
+				}
 			} else if (realIndex == 1) { 
 				if (result.label != null) { // первым была метка
 					if (checkReservedWord(part)) // действительно ли второе - операнд

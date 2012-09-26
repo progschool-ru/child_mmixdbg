@@ -13,9 +13,9 @@ function find(a, obj) {
 			return i;
 		}
 	}
-	return -1;
+	return null;
 }
 
 function contains(a, obj) {
-	return find(a, obj) != -1;
+	return find(a, obj) != null;
 }

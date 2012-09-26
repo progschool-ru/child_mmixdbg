@@ -6,6 +6,7 @@
 		<script src="js/types.js" type="text/javascript" encoding="utf-8"></script>
 		<script src="js/environment.js" type="text/javascript" encoding="utf-8"></script>
 		<script src="js/parser.js" type="text/javascript" encoding="utf-8"></script>
+		<script src="js/main.js" type="text/javascript" encoding="utf-8"></script>
 	</head>
 	<body>
 		<h1>MMIXdbg</h1>
@@ -13,7 +14,7 @@
 			<textarea id="usercode" cols=80 rows=25>
 				Enter your code here
 			</textarea><br/>
-			<input type=submit value="Run!">
+			<input onclick="runCode(document.getElementById('usercode').value)" type=submit value="Run!" />
 		</form>
 	</body>
 </html>

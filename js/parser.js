@@ -2,7 +2,7 @@ var MMIX_INSTRUCTIONS = ["LDB", "LDW", "LDT", "LDO", "LDBU", "LDWU", "LDTU", "LD
 var MMIX_KEYWORDS = ["IS", "LOC"] + MMIX_INSTRUCTIONS;
 
 function parsingError(description, lexem, line) {
-	return description + ": `" + lexem + "` at line `" + line "`";
+	return description + ": `" + lexem + "` at line `" + line + "`";
 }
 
 function regexCheckNumber(pretendNumber) {

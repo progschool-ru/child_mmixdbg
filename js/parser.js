@@ -70,13 +70,13 @@ function parseExpr(expr) {
 	}
 	splitted.push(expr.substring(fromIndex));
 
-	//console.log("done parsing expression " + expr);
 //	checkExprParts(splitted);
 	return splitted;
 }
 
 function parseLine(line) {
 	var splitted = line.split(" ");
+	
 	var result = {
 		label: null,
 		operand: null,
@@ -84,21 +84,19 @@ function parseLine(line) {
 	};
 	
 	var realIndex = 0; // реальный индекс (с пропусками пустых сплитов)
-	for (var partKey in splitted) {
-		var part = splitted[partKey];
-		console.log("Parsing part " + part);
-		console.log("realIndex is " + realIndex);
+	
+	while (true) {
+		var part = splitted[0];
 		if (part.length != 0) {
 			if (realIndex == 0) { 
 				if (checkReservedWord(part)) {
 					result.operand = part;
-					console.log("  First is reserved");
 				} else if (checkUserSpaceWord(part)) { // метка - первое слово
 					result.label = part;
-					console.log("  First is user-space");
 				} else { // первое слово не опреранд и не метка
 					throw parsingError("Unrecognized lexem", part, line);
 				}
+				splitted.shift();
 			} else if (realIndex == 1) { 
 				if (result.label != null) { // первым была метка
 					if (checkReservedWord(part)) // действительно ли второе - операнд
@@ -108,13 +106,13 @@ function parseLine(line) {
 				} else { // если первое - не метка, то второе - аргументы
 					result.expr = parseExpr(part);
 				}
-			} else if (realIndex == 2) { // только EXPR
-				result.expr = parseExpr(part);
-			} else if (realIndex > 2)
-				throw parsingError("Too many fields to assembly", "", line);
+				splitted.shift();
+			} else if (realIndex >= 2)
+				break;
 			++realIndex;
 		}
 	}
+	result.expr = parseExpr(splitted.join(""));
 
 	return result;
 }

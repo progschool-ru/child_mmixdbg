@@ -1,5 +1,5 @@
 var MMIX_INSTRUCTIONS = ["LDB", "LDW", "LDT", "LDO", "LDBU", "LDWU", "LDTU", "LDOU", "LDHT", "LDA", "STB", "STW", "STT", "STO", "STBU", "STWU", "STTU", "STTOU", "STHT", "STCO", "ADD", "SUB", "MUL", "DIV", "ADDU", "SUBU", "MULU", "DIVU", "NEG", "NEGU", "SL", "SLU", "SR", "SRU", "CMP", "CMPU", "CSN", "CSZ", "CSP", "CSOD", "CSNN", "CSNZ", "CSNP", "CSEV", "ZSN", "ZSZ", "ZSP", "ZSOD", "ZSNN", "ZSNZ", "ZSNP", "ZSEV", "AND", "OR", "XOR", "ANDN", "ORN", "NAND", "NOR", "NXOR", "MUX", "SADD", "BDIF", "WDIF", "TDIF", "ODIF", "MOR", "MXOR", "FADD", "FSUB", "FMUL", "FDIV", "FREM", "FSQRT", "FINT", "FCMP", "FEQL", "FUN", "FCMPE", "FEQLE", "FUNE", "FIX", "FIXU", "FLOT", "FLOTU", "SFLOT", "SFLOTU", "LDSF", "STSF", "SETH", "SETMH", "SETML", "SETL", "INCH", "INCHM", "INCML", "INCL", "ORH", "ORMH", "ORML", "ORL", "ANDNH", "ANDNMH", "ANDNML", "ANDNL", "JMP", "GO", "BN", "BZ", "BP", "BOD", "BNN", "BNZ", "BNP", "BEV", "PBN", "PBZ", "PBP", "PBOD", "PBNN", "PBNZ", "PBNP", "PBEV", "PUSHJ", "PUSHGO", "POP", "SAVE", "UNSAVE", "LDUNC", "STUNC", "PRELD", "PREST", "PREGO", "SYNCID", "SYNCD", "SYNC", "CSWAP", "LDVTS", "TRIP", "TRAP", "RESUME", "GET", "PUT", "GETA", "SWYM"];
-var MMIX_KEYWORDS = ["IS", "LOC"].concat(MMIX_INSTRUCTIONS);
+var MMIX_KEYWORDS = ["IS", "LOC", "GREG", "BYTE", "WYDE", "TETRA", "OCTA"].concat(MMIX_INSTRUCTIONS);
 
 function parsingError(description, lexem, line) {
 	throw description + ": `" + lexem + "` at line `" + line + "`";
@@ -22,11 +22,12 @@ function checkUserSpaceWord(pretendWord) {
 }
 
 function checkExprParts(splitted) {
+	console.log("checking parts");
 	for (var i in splitted) {
 		var part = splitted[i];
 		if (regexCheckNumber(part) || regexCheckRegister(part) || checkUserSpaceWord(part)) {
 			// OK. stub
-		} else if ("\"" + eval(part) + "\"" == part) {
+		} else if (part[0] == "\"" && part[part.length - 1] == "\"") {
 			// OK. stub
 		} else
 			parsingError("Unrecognized lexem in EXPR", part, splitted.join(", "));
@@ -69,7 +70,7 @@ function parseExpr(expr) {
 	}
 	splitted.push(expr.substring(fromIndex));
 
-//	checkExprParts(splitted);
+	checkExprParts(splitted);
 	return splitted;
 }
 
@@ -85,11 +86,14 @@ function parseLine(line) {
 	var realIndex = 0; // реальный индекс (с пропусками пустых сплитов)
 	
 	while (true) {
-		var part = splitted[0];
+		if (realIndex >= 2)
+			break;
+		var part = splitted[0];		
+		var capitalPart = part.toUpperCase();
 		if (part.length != 0) {
 			if (realIndex == 0) { 
-				if (checkReservedWord(part)) {
-					result.operand = part;
+				if (checkReservedWord(capitalPart)) {
+					result.operand = capitalPart;
 				} else if (checkUserSpaceWord(part)) { // метка - первое слово
 					result.label = part;
 				} else { // первое слово не опреранд и не метка
@@ -98,12 +102,12 @@ function parseLine(line) {
 				splitted.shift();
 			} else if (realIndex == 1) { 
 				if (result.label != null) { // первым была метка
-					if (checkReservedWord(part)) // действительно ли второе - операнд
-						result.operand = part;
+					if (checkReservedWord(capitalPart)) // действительно ли второе - операнд
+						result.operand = capitalPart;
 					else 
 						throw parsingError("Unrecognized operand", part, line); // второе не операнд
 				} else { // если первое - не метка, то второе - аргументы
-					result.expr = parseExpr(part);
+					result.expr = parseExpr(splitted.join(""));
 				}
 				splitted.shift();
 			} else if (realIndex >= 2)
@@ -111,7 +115,9 @@ function parseLine(line) {
 			++realIndex;
 		}
 	}
-	result.expr = parseExpr(splitted.join(""));
+	console.log(result);
+	if (result.label != null) 
+		result.expr = parseExpr(splitted.join(""));
 
 	return result;
 }

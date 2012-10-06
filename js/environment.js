@@ -3,12 +3,12 @@ function Environment() {
 	this.SPECIAL_REGISTER_COUNT = 32;
 	var registers = [];
 	for (var i = 0; i < this.COMMON_REGISTER_COUNT; ++i) 
-		registers["$" + i] = new Multibyte(null);	
+		registers["$" + i] = new Multibyte(8, null);
 	for (var i = ord('A'); i <= ord('Z'); ++i)
-		registers["r" + chr(i)] = new Multibyte(null);
-	registers["rBB"] = new Multibyte(null);
-	registers["rTT"] = new Multibyte(null);
-	registers["rWW"] = new Multibyte(null);
+		registers["r" + chr(i)] = new Multibyte(8, null);
+	registers["rBB"] = new Multibyte(8, null);
+	registers["rTT"] = new Multibyte(8, null);
+	registers["rWW"] = new Multibyte(8, null);
 
 	this.readRegister = function(registerName) {
 		var reg = registers[registerName];
@@ -22,7 +22,7 @@ function Environment() {
 		if (registers[registerName] === undefined)
 			throw "Bad register name";
 
-		registers[registerName] = new Multibyte(value);
+		registers[registerName].set(value);
 
 		return registers[registerName];
 	}

@@ -27,6 +27,8 @@ function Environment() {
 		return registers[registerName];
 	}
 
-	this.MEMORY_SIZE = 8192; // байт
+	this.MEMORY_SIZE = 256; // байт
 	this.memory = new Array(this.MEMORY_SIZE);
+	for (var i = 0; i < this.MEMORY_SIZE; ++i)
+		this.memory[i] = 0;
 }

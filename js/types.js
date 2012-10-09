@@ -24,7 +24,6 @@ function Multibyte(sizeN, stringValue) { // суперкласс всех окт
 			for (var i = this.size; i >= 1; --i) { // переносим кроме самого старшего байта
 				var overflow = this.bytes[i] - 0xff;
 				if (overflow > 0) { 
-					console.log("overflow");
 					this.bytes[i - 1] += overflow;						
 				}
 			}
@@ -68,9 +67,7 @@ function Multibyte(sizeN, stringValue) { // суперкласс всех окт
 	}
 
 	this.set = function(anotherOctabyte) {
-		console.log("setting octabyte; type = " + typeof anotherOctabyte);
 		if (typeof anotherOctabyte == "string") {
-			console.log("here");
 			this.parseFromString(anotherOctabyte);
 		} else if (typeof anotherOctabyte == "number") {
 			throw "not implemented yet"; // stub

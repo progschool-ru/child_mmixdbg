@@ -1,0 +1,37 @@
+body {
+	background: #0f0;
+	margin: 0;
+}
+
+div {
+	margin: 0;
+	padding: 0;
+}
+
+.header {
+	background: #999;
+}
+
+.debugger {
+	background: #555;
+}
+
+.code {
+	padding-left: 10px;
+	padding-top: 0px;
+	float: left;
+	width: 400px;
+	background: #f00;
+}
+
+.memory {
+	float: left;
+	background: #ff0;
+	width: 300px;
+}
+
+.registers {
+	float: left;
+	background: #f0f;
+	width: 300px;
+}

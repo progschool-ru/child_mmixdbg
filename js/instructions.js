@@ -2,17 +2,6 @@ var mmixInstrSet = []; // можно обращаться как через им
                        // верхнем регистре, так и через опкод
 /* все функции run* работают в контексте ммикс-машины */
 
-function parseCommandTetra(tetrabyte) {
-	var result = { 
-		opcode: (tetrabyte && 0xff000000) >> 24,
-		x: (tetrabyte && 0xff0000) >> 16,
-		y: (tetrabyte && 0xff00) >> 8,
-		z: (tetrabyte && 0xff)
-	};
-
-	return result;
-}
-
 function parseExprArg(arg) {
 	if (arg[0] == '$') 
 		return parseInt(arg.substring(1));
@@ -29,14 +18,6 @@ function xyzTemplate(instrOpcode) {
 			parseExprArg(expr[2])
 		];
 	}
-}
-
-function joinCommand(splittedCommand) {
-	return
-		(splittedCommand.opcode << 24) + 
-		(splittedCommand.x << 16) + 
-		(splittedCommand.y << 8) + 
-		(splittedCommand.z);
 }
 
 // добавляет представление функции 
@@ -78,6 +59,8 @@ function assembleCode(code) {
 	var lines = code.split("\n");
 	for (var lineIndex in lines) {
 		var line = lines[lineIndex];
+		if (/^\s*$/.test(line)) // пустая строчка
+			continue;
 		program = program.concat(assembleLine(line));
 	}
 

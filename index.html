@@ -11,12 +11,27 @@
 		<script src="js/machine.js" type="text/javascript" encoding="utf-8"></script>
 		<script src="js/assembler.js" type="text/javascript" encoding="utf-8"></script>
 		<script src="js/main.js" type="text/javascript" encoding="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="css/main.css">
 	</head>
 	<body>
-		<h1>MMIXdbg</h1>
-		<form>
-			<textarea id="usercode" cols=80 rows=25>Enter your code here</textarea><br/>
-			<input onclick="runCode(document.getElementById('usercode').value)" type=submit value="Run!" />
-		</form>
+		<div class="header">
+			<h1>МиМиМикс</h1>
+		</div>
+		<div class="debugger">
+			<div class="code">
+				<textarea id="usercode" cols=40 rows=40>Enter your code here</textarea><br/>
+				<input onclick="runCode(document.getElementById('usercode').value)" type=button value="Run!" />
+			</div>
+			<div class="memory" id="mem_div">
+
+				here is memory
+			</div>
+			<div class="registers" id="reg_div">
+				here is registers
+			</div>
+		</div>
+		<script>
+			createMMIXView();
+		</script>
 	</body>
 </html>

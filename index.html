@@ -18,10 +18,12 @@
 		<div class="header">
 			<h1>MMIX online REPL and debugger</h1>
 		</div>
+		<!-- <input onclick="document.location=./index.html" type="button" value="Reload page" /> -->
+		<input onclick="resetMachine()" type="button" value="Reset machine" />
 		<div class="debugger">	
 			<div class="code">
-				<textarea id="usercode" cols=40 rows=35>Enter your code here</textarea><br/>
-				<input onclick="runCode(document.getElementById('usercode').value)" type=button value="Run!" />
+				<textarea id="usercode" cols=40 rows=35></textarea><br/>
+				<input onclick="runCode(document.getElementById('usercode').value)" type="button" value="Run!" />
 			</div>
 			<div class="memory" id="mmix_mem">
 

@@ -1,5 +1,5 @@
 var mmixInstrSet = []; // можно обращаться как через имя инструкции в 
-                       // верхнем регистре, так и через опкод
+                       // верхнем регистре, так и через опкод(если есть (для BYTE нету))
 /* все функции run* работают в контексте ммикс-машины */
 
 var OPCODE_LOC = -1, 
@@ -86,6 +86,21 @@ function runStco(context, commandBytes) {
 }
 
 // ТУТ ОПИСЫВАТЬ ПРАВИЛА АССЕМБЛИРОВАНИЯ И ЗАПУСКА ИНСТРУКЦИЙ
+
+/* BYTE - особая инструкция */
+mmixInstrSet["BYTE"] = {
+		opcode: -1,
+		asciiName: "BYTE",
+		asmFunction: function (expr) {
+			var bytes = new Array(expr.length);
+			for (var i in expr) {
+				bytes[i] = expr[i] & 0xff;
+			}
+			return bytes;
+		},
+		runFunction: function() {}
+	};
+
 describeInstruction("ADD", 0x20, runAdd);
 
 describeInstruction("LDB", 0x80, LdWrapper(1));
@@ -102,7 +117,7 @@ describeInstruction("STCO", 0xb4, runStco);
 
 // ассемблирует строку кода
 // OLD SHIT
-/*function assembleLine(line, program) {
+/*function (line, program) {
 	var parsed = parseLine(line);
 	console.log("parsed.label is `" + (parsed.label) + "`");
 	if (parsed.label != null) {
@@ -198,7 +213,7 @@ function precompileCode(code) {
 /* Заменяет метки их численнымии эквивалентами */
 function reduceLine(line, namespace, lineNr) {
 	var parsed = parseLine(line);
-	for (var i = 0; i < 3; ++i) {
+	for (var i = 0; i < parsed.expr.length; ++i) {
 		if (/^[a-zA-Z]{1}\w*$/.test(parsed.expr[i])) { // значит текущий аргумент нужно брать из пространства имен
 			if (namespace[parsed.expr[i]] === undefined) {
 				//throw "reduceLine -> can't parse" + parsed.expr[i];

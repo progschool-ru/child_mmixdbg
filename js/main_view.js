@@ -72,6 +72,10 @@ function updateViews() {
 	console.log("Views is up-to-date");
 }
 
+function resetMachine() {
+	mmixMachine.reset();
+}
+
 function runCode(code) {
 /*	var assembled = assembleCode(code);
 	mmixMachine.loadProgram(assembled, 0);

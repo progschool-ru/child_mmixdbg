@@ -1,0 +1,41 @@
+body {
+	/*background: #0f0;*/
+	margin: 0;
+}
+
+div {
+	margin: 0;
+	padding: 0;
+}
+
+.header {
+	/*background: #999;*/
+}
+
+.debugger {
+	/*background: #555;*/
+}
+
+.code {
+	padding-left: 10px;
+	padding-top: 0px;
+	float: left;
+	width: 380px;
+	background: #ddd;
+}
+
+.memory {
+	float: left;
+	background: #eee;
+	width: 530px;
+}
+
+.registers {
+	float: left;
+	background: #ccc;
+	width: 300px;
+}
+
+.separatorCell {
+	width: 10px;
+}

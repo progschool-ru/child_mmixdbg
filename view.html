@@ -1,0 +1,36 @@
+<html>
+	<head>
+		<title>MMIX online REPL & debugger</title>
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+		<!--script src="js/inheritance.js" type="text/javascript" encoding="utf-8"></script-->
+		<script src="js/common.js" type="text/javascript" encoding="utf-8"></script>
+		<script src="js/types.js" type="text/javascript" encoding="utf-8"></script>
+		<script src="js/instructions.js" type="text/javascript" encoding="utf-8"></script>
+		<script src="js/environment.js" type="text/javascript" encoding="utf-8"></script>
+		<script src="js/parser.js" type="text/javascript" encoding="utf-8"></script>
+		<script src="js/machine.js" type="text/javascript" encoding="utf-8"></script>
+		<script src="js/assembler.js" type="text/javascript" encoding="utf-8"></script>
+		<script src="js/main_view.js" type="text/javascript" encoding="utf-8"></script>
+		<script src="js/errors.js" type="text/javascript" encoding="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="css/main.css">
+	</head>
+	<body>
+		<div class="header">
+			<h1>MMIX online REPL and debugger</h1>
+		</div>
+		<div class="debugger">	
+			<div class="code">
+				<textarea id="usercode" cols=40 rows=35>Enter your code here</textarea><br/>
+				<input onclick="runCode(document.getElementById('usercode').value)" type=button value="Run!" />
+			</div>
+			<div class="memory" id="mmix_mem">
+
+			</div>
+			<div class="registers" id="mmix_reg">
+			</div>
+		</div>
+		<script>
+			createMMIXView();
+		</script>
+	</body>
+</html>

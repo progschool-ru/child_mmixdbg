@@ -22,6 +22,10 @@ function regexCheckUserSpaceWord(pretendWord) {
 	return /^[a-z_][a-z_0-9]*$/i.test(pretendWord);
 }
 
+function isMacro(pretendWord) {
+	return (pretendWord == 'IS' || pretendWord == 'GREG' || pretendWord == 'LOC');
+}
+
 function checkArithmetic(pretendPart) {
 	console.log("checkArithmetic(" + pretendPart + ")");
 	if (regexCheckNumber(pretendPart) || pretendPart.trim().length == 0) {

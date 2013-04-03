@@ -118,17 +118,26 @@ function assembleLine(parsedLine) {
 	return mmixInstrSet[parsedLine.operand].asmFunction(parsedLine.expr);
 }
 
+function nextInstrAddr(program) {
+	return program.offset + program.commandCounter * COMMAND_SIZE;
+}
+
 /*
 	Прекомпиляция строчки:
 	1) Обрабатываются макросы LOC, IS, GREG
 	2) Записываются в program.namespace адреса всех меток
  */
 function precompileLine(line, program, lineNr) {
+	var parsed = parseLine(line);
 	var macroArgMultibyte = null;
 	var oper = parsed.operand;
-	if (oper == "LOC" || oper == "IS" || oper == "GREG") {
+
+	program.namespace[lineNr] = nextInstrAddr(program);
+	if (isMacro(oper)) {
 		macroArgMultibyte = new Multibyte(4, parsed.expr[0]);		
+		program.namespace[lineNr] += COMMAND_SIZE; // для макроса @ означает адрес следующей инструкции
 	}
+
 	if (oper == "LOC") { // макрос
 		if (program.commandCounter != 0) 
 			makeSyntaxError("LOC macro is too late!", line, -123);
@@ -138,14 +147,13 @@ function precompileLine(line, program, lineNr) {
 	} else if (oper == "GREG") { // макрос
 		program.namespace[parsed.label] = "$" + program.gregCounter.toString();
 		program.initRegisters[program.gregCounter] = macroArgMultibyte.toInteger();
-		program.gregCounter--;
+		program.gregCounter--;		
 	} else { // обычная команда
 		//program.code = program.code.concat(assembleLine(line, program));
 		var parsed = parseLine(line);
 		if (parsed.label != null) {
 			program.namespace[parsed.label] = program.offset + program.commandCounter * COMMAND_SIZE;
 		}
-		program.namespace[lineNr] = program.offset + program.commandCounter * COMMAND_SIZE;
 		program.code = program.code.concat(line);
 		program.commandCounter++;
 	}

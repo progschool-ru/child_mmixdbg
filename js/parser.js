@@ -27,7 +27,7 @@ function isMacro(pretendWord) {
 }
 
 function checkArithmetic(pretendPart) {
-	console.log("checkArithmetic(" + pretendPart + ")");
+	//console.log("checkArithmetic(" + pretendPart + ")");
 	if (regexCheckNumber(pretendPart) || pretendPart.trim().length == 0) {
 		return true;
 	}
@@ -42,7 +42,7 @@ function checkArithmetic(pretendPart) {
 	var inWord = false; // указатель находится или в числе, или в @, или в идентификаторе, или в ()
 	// (-5*a)
 	for (; i < pretendPart.length; ++i) {
-		console.log("i = " + i);
+		//console.log("i = " + i);
 		if (pretendPart[i] == '(') {
 			if (i > 0) {
 				var prchar = pretendPart[i - 1];
@@ -71,7 +71,7 @@ function checkArithmetic(pretendPart) {
 			}
 		} else if (level == 0) {
 			var wchar = pretendPart[i]; // working character
-			console.log("wchar = " + wchar);
+			//console.log("wchar = " + wchar);
 			if (wchar == '+' || wchar == '-' || wchar == '*' || wchar == '/') {
 				if (inWord == false) {
 					console.log("too much operators next to each other");

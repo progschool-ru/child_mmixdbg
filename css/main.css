@@ -22,6 +22,7 @@ div {
 	padding-top: 0px;
 	float: left;
 	width: 380px;
+	height:610px;
 	background: #ddd;
 }
 
@@ -29,6 +30,7 @@ div {
 	float: left;
 	background: #eee;
 	width: 530px;
+	height:610px;
 }
 
 .registers {

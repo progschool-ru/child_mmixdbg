@@ -33,10 +33,10 @@ function Environment() {
 		this.memory[i] = 0;
 
 	this.getRealAddr = function(multibyteAddr) {
-		return multibyteAddr.bytes[0] + 
+		/*return multibyteAddr.bytes[0] + 
 			   multibyteAddr.bytes[1] >> 8 + 
 			   multibyteAddr.bytes[2] >> 16 + 
-			   multibyteAddr.bytes[3] >> 24;
+			   multibyteAddr.bytes[3] >> 24;*/
 		return multibyteAddr.toInteger();
 	}
 

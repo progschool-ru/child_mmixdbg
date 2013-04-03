@@ -80,6 +80,7 @@ function runCode(code) {
 /*	var assembled = assembleCode(code);
 	mmixMachine.loadProgram(assembled, 0);
 	mmixMachine.runProgram();*/
+	resetMachine();
 	var compiled = compileCode(code);
 	console.log("Successfully compiled program. Bytecode: ");
 	console.log(compiled.bytecode);

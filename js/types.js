@@ -67,7 +67,6 @@ function Multibyte(sizeN, stringValue) { // суперкласс всех окт
 		if (stringValue[0] != '#') {
 			if (/\d+/.test(stringValue)) {
 				var intVal = parseInt(stringValue);
-				console.log("multibyte from str-int: " + intVal);
 				this.bytes[this.bytes.length - 1] = intVal & 0xff;
 				this.bytes[this.bytes.length - 2] = (intVal >> 8) & 0xff;
 				this.bytes[this.bytes.length - 3] = (intVal >> 16) & 0xff;

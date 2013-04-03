@@ -13,18 +13,15 @@ function Machine(loadAddress) {
 		this.progSize = program.bytecode.length / 4;
 		this.codeStart = program.offset;
 		for (var i = 0; i < program.bytecode.length; ++i) {
-			console.log("loading to address " + (program.offset + i));
 			this.env.memory[program.offset + i] = program.bytecode[i];
 		}
 		
 		for (var i = 0; i < 255; ++i) {
 			this.env.registers["$" + i] = new Multibyte(8, "#" + program.initRegisters[i].toString());
 		}
-		console.log(this.env);
 	}
 
 	this.runProgram = function() {
-		console.log("Running program");
 		for (var i = 0; i < this.progSize; ++i) {
 				this.oscillatorTick();	
 		}
@@ -36,8 +33,6 @@ function Machine(loadAddress) {
 		}
 		var currentCmd = this.env.memory.slice(this.codeStart + this.cmdOffset * 4, this.codeStart + (this.cmdOffset + 1) * 4);
 		var instruction = mmixInstrSet[currentCmd[0]];
-		console.log("instruction:");
-		console.log(instruction);
 		if (instruction !== undefined)		
 			mmixInstrSet[currentCmd[0]].runFunction(this, currentCmd);
 		else

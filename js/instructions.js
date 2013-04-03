@@ -134,7 +134,7 @@ function assembleLine(parsedLine) {
 }
 
 function nextInstrAddr(program) {
-	return program.offset + program.commandCounter * COMMAND_SIZE;
+	return program.offset + (program.commandCounter + 1) * COMMAND_SIZE;
 }
 
 /*

@@ -41,7 +41,7 @@ function Machine(loadAddress) {
 		if (instruction !== undefined)		
 			mmixInstrSet[currentCmd[0]].runFunction(this, currentCmd);
 		else
-			throw "Invalid opcode `" + currentCmd[0] + '\' at #' + (this.codeStart + i * 4).toString(16);
+			throw "Invalid opcode `" + currentCmd[0];
 
 		this.cmdOffset++;
 	}

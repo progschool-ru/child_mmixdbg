@@ -6,6 +6,8 @@
 function Multibyte(sizeN, stringValue) { // суперкласс всех октабайтов, тетрабайтов итд
 	this.size = sizeN; // размер в байтах
 	this.bytes = []; // одна ячейка - один байт
+					 // this.bytes[0] - старший байт
+					 // this.bytes[this.bytes.length - 1] - младший байт
 
 	this.full = function() { // this == 0xfff...ff
 		for (var i = 0; i < this.size; ++i)
@@ -62,10 +64,18 @@ function Multibyte(sizeN, stringValue) { // суперкласс всех окт
 	}
 
 	this.parseFromString = function(stringValue) { // парсит мультибайт из строки формата #11ffbb23
-		if (stringValue[0] != '#') 
-			throw "Non-hexademical multibyte format";
-		var raw = stringValue.substring(1);
-		if (true) {
+		if (stringValue[0] != '#') {
+			if (/\d+/.test(stringValue)) {
+				var intVal = parseInt(stringValue);
+				console.log("multibyte from str-int: " + intVal);
+				this.bytes[this.bytes.length - 1] = intVal & 0xff;
+				this.bytes[this.bytes.length - 2] = (intVal >> 8) & 0xff;
+				this.bytes[this.bytes.length - 3] = (intVal >> 16) & 0xff;
+				this.bytes[this.bytes.length - 4] = (intVal >> 24) & 0xff;				
+			} else 
+				throw "Non-hexademical multibyte format";
+		} else {
+			var raw = stringValue.substring(1);
 			var bytesCount = Math.floor(raw.length / 2) + raw.length % 2;
 			if (raw.length % 2 == 1)
 				raw = "0" + raw;
@@ -75,8 +85,8 @@ function Multibyte(sizeN, stringValue) { // суперкласс всех окт
 			}
 
 			return this;
-		} else
-			throw "Multibyte length is not even";
+		} //else
+			// throw "Multibyte length is not even";
 	}
 
 	this.set = function(anotherOctabyte) {

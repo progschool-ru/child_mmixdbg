@@ -88,21 +88,58 @@ function Multibyte(sizeN, stringValue) { // суперкласс всех окт
 			// throw "Multibyte length is not even";
 	}
 
+	this.sizeMismatchTest = function(anotherOctabyte) {
+		if (anotherOctabyte.size > this.size) 
+			throw "Size mismatch";
+	}
+
 	this.set = function(anotherOctabyte) {
 		if (typeof anotherOctabyte == "string") {
 			this.parseFromString(anotherOctabyte);
 		} else if (typeof anotherOctabyte == "number") {
 			throw "not implemented yet"; // stub
 		} else if (typeof anotherOctabyte == "object") {
-			if (anotherOctabyte.size <= this.size) {
-				this.clean();
-				//this.bytes = anotherOctabyte.bytes;
-				for (var i = 0; i < anotherOctabyte.size; ++i) {
-					this.bytes[this.size - 1 - i] = anotherOctabyte.bytes[anotherOctabyte.size - 1 - i];
-				}
-			} else
-				throw "Size mismatch";
+			sizeMismatchTest(anotherOctabyte);
+			this.clean();
+			//this.bytes = anotherOctabyte.bytes;
+			for (var i = 0; i < anotherOctabyte.size; ++i) {
+				this.bytes[this.size - 1 - i] = anotherOctabyte.bytes[anotherOctabyte.size - 1 - i];
+			}
 		}
+	}
+
+	this.bitFunction = function(binOperator, anotherOctabyte) {
+		if (typeof anotherOctabyte == "object") {
+			for (var i in anotherOctabyte.bytes) {
+				this.bytes[i] = binOperator(this.bytes[i], anotherOctabyte.bytes[i]);
+			}
+		}
+	}
+
+	this.xor = function(anotherOctabyte) {
+		this.bitFunction( function(a, b) { return a ^ b; } , anotherOctabyte );
+	}
+
+	this.and = function(anotherOctabyte) {
+		this.bitFunction( function(a, b) { return a & b; } , anotherOctabyte );
+	}
+
+	this.or = function(anotherOctabyte) {
+		this.bitFunction( function(a, b) { return a | b; } , anotherOctabyte );
+	}
+
+	this.lshift = function() {
+		for (var i = 0; i < this.bytes.length - 1; ++i) {
+			this.bytes[i] = this.bytes[i + 1];
+		}	
+		this.bytes[this.bytes.length - 1] = 0;
+	}
+
+	this.rshift = function() {
+		for (var i = this.bytes.length - 1; i >= 1; --i) {
+			this.bytes[i] = this.bytes[i - 1];
+		}
+		this.bytes[0] = 0;
 	}
 
 	if (stringValue != null) { // конструктор размазало

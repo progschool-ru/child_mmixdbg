@@ -28,7 +28,7 @@ function errorQueue() {
 	// выкидывает все ошибки. в view будет trycatch для обработки ошибок.
 	this.finish = function() {
 		for (var i = 0; i < this.length; ++i) {
-			throw "[" + errTypeStr[this.queue[i].type] + "] at line `" + this.queue[i].line + "`: " + this.queue[i].description;
+			alert( "[" + errorTypeStr[this.queue[i].type] + "] at line `" + this.queue[i].line + "`: " + this.queue[i].description);
 		}
 	}
 }

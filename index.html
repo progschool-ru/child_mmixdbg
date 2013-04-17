@@ -16,20 +16,32 @@
 	</head>
 	<body>
 		<div class="header">
-			<h1>MiMiMix</h1>
+			<h1>MiMiMix</h1>			
+		</div>
+
+		<div class="toolbar">
+			<input onclick="resetMachine()" type="button" value="Reset machine" />
+			<input onclick="updateViews()" type="button" value="Update view" />
 		</div>
 		<!-- <input onclick="document.location=./index.html" type="button" value="Reload page" /> -->
-		<input onclick="resetMachine()" type="button" value="Reset machine" />
-		<input onclick="updateViews()" type="button" value="Update view" />
+		
 		<div class="debugger">	
 			<div class="code">
-				<textarea id="usercode" cols=40 rows=35></textarea><br/>
+				<textarea id="usercode"></textarea><br/>
 				<input onclick="runCode(document.getElementById('usercode').value)" type="button" value="Run!" />
 			</div>
-			<div class="memory" id="mmix_mem">
+			<div class="mmix_info">
+				<div class="mmix_env">
+					<div class="memory" id="mmix_mem">
+					</div>
+					<div class="registers" id="mmix_reg">
+					</div>
+				</div>
+				<div class="errors" id="mmix_err">
+					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam sit amet felis ante. Proin porttitor purus eget mi ultrices adipiscing eget ac nibh. Praesent neque velit, mollis a varius a, scelerisque non elit. Sed id erat sed ligula suscipit porttitor. Mauris volutpat eros ut libero tristique ultrices nec eget elit. Nulla faucibus est tincidunt lorem ullamcorper porta consectetur vel tortor. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Morbi blandit elementum gravida. Fusce dignissim, risus vel varius scelerisque, arcu mauris euismod risus, et semper sapien metus id lectus. Donec adipiscing vulputate dui, a suscipit diam elementum vitae.
 
-			</div>
-			<div class="registers" id="mmix_reg">
+Praesent pretium, ante in sollicitudin vulputate, turpis sem pharetra odio, at tempor diam dui sed lorem. Sed lorem eros, sollicitudin eget porta sed, mollis sed ipsum. Fusce vel tincidunt nisl. Duis a odio elit, a sagittis dolor. Integer viverra ultricies sagittis. Phasellus mattis consectetur porta. Pellentesque metus risus, interdum eu convallis a, pretium sit amet magna. Sed adipiscing porta purus rutrum accumsan. Nunc in ipsum nisi. Etiam porta nisi eget elit placerat id ullamcorper lacus feugiat.
+				</div>
 			</div>
 		</div>
 		<script>

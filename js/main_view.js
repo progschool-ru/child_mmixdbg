@@ -6,7 +6,7 @@ var VIEW_MEM_WIDTH = 16,
 
 function createMMIXmemView() {
 	var mtable_code = 
-		"<table border=0>\
+		"<table>\
 			<tr><td></td>";
 
 	mtable_code += "<td class=separatorCell></td>"
@@ -46,10 +46,10 @@ function createMMIXView() {
 	createMMIXmemView();
 	createMMIXregView();
 
-	var rtable_code = "<table border=1>";
+	var rtable_code = "<table>";
 	for (var i = 0; i < 255; ++i) {
 		rtable_code += "<tr>";
-		rtable_code += "<td>$" + i + "</td>";
+		rtable_code += "<td><b>$" + i + "</b></td>";
 		rtable_code += "<td id=\"mmix_reg" + i + "\">" + mmixMachine.env.readRegister("$" + i).toString() + "</td>";
 		rtable_code += "</tr>";
 	}

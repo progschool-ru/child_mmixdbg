@@ -90,3 +90,11 @@ function runCode(code) {
 
 	updateViews();
 }
+
+function buttonMouseOver(buttonId) {
+	document.getElementById(buttonId).className = "toolbutton_mover";
+}
+
+function buttonMouseOut(buttonId) {
+	document.getElementById(buttonId).className = "toolbutton";
+}

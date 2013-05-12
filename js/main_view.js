@@ -23,7 +23,6 @@ function createMMIXmemView() {
 
 	var changes = null;
 	if (mmixMachine.env.prevMem) {
-		console.log("calculating changes");
 		changes = mmixMachine.env.calcMemChanges();
 	}
 
@@ -38,8 +37,6 @@ function createMMIXmemView() {
 			var addr = i * VIEW_MEM_WIDTH + j;
 
 			var byteStrVal = mmixMachine.env.memory[addr].toString(16).addLeadingZeros(2);
-			if (byteStrVal != "00")
-				console.log("byteStrVal: " + typeof mmixMachine.env.memory[addr]);
 			if (!changes)
 				mtable_code += "<td id=\"mmix_mem" + addr + "\">" + byteStrVal + "</td>";
 			else if (changes[addr] == 0)
@@ -50,7 +47,6 @@ function createMMIXmemView() {
 		mtable_code += "</tr>";
 	}
 
-	console.log("backing up memory");
 	mmixMachine.env.backupMem();
 
 	document.getElementById("mmix_mem").innerHTML = mtable_code;
@@ -87,7 +83,6 @@ function updateViews() {
 	for (var i = 0; i < 255; ++i) {
 		document.getElementById("mmix_reg" + i).innerHTML = mmixMachine.env.readRegister("$" + i).toString();
 	}
-	console.log("Views is up-to-date");
 }
 
 function resetMachine() {
@@ -100,11 +95,11 @@ function runCode(code) {
 	mmixMachine.runProgram();*/
 	resetMachine();
 	var compiled = compileCode(code);
-	console.log("Successfully compiled program. Bytecode: ");
-	console.log(compiled.bytecode);
+	console.log("Program compiled");
 	mmixMachine.loadProgram(compiled);
-	console.log("Program loaded. Updating view");
+	console.log("Program loaded to memory");
 	mmixMachine.runProgram();
+	console.log("Run successful");
 
 	updateViews();
 }

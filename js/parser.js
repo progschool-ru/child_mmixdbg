@@ -47,7 +47,7 @@ function checkArithmetic(pretendPart) {
 			if (i > 0) {
 				var prchar = pretendPart[i - 1];
 				if (!(prchar == '+' || prchar == '-' || prchar == '*' || prchar == '/')) {
-					console.log("shit before opening parenthesis");
+					throw ("shit before opening parenthesis");
 					return false; // до открывающей скобки идет не знак: ()(), ab()
 				}
 			}
@@ -61,12 +61,12 @@ function checkArithmetic(pretendPart) {
 			if (level == 0) {
 				var parExpr = pretendPart.substring(parStart + 1, i);
 				if (!checkArithmetic(parExpr)) {
-					console.log(parExpr + " is shit! [recursive return]");
+					throw (parExpr + " is shit! [recursive return]");
 					return false; // выражение в скобках не удовлетворяет
 				}
 			}
 			if (level < 0) {
-				console.log("too much closing parentheses")
+				throw ("too much closing parentheses")
 				return false; // стоит лишняя закрывающая скобка
 			}
 		} else if (level == 0) {
@@ -74,14 +74,14 @@ function checkArithmetic(pretendPart) {
 			//console.log("wchar = " + wchar);
 			if (wchar == '+' || wchar == '-' || wchar == '*' || wchar == '/') {
 				if (inWord == false) {
-					console.log("too much operators next to each other");
+					throw ("too much operators next to each other");
 					return false; // много знаков подряд идет
 				}
 				inWord = false;
 			} else if (/[a-zA-Z0-9@]/.test(wchar)) {
 				if (i > 0) {
 					if (pretendPart[i - 1] == ')') {
-						console.log("shit after closing parenthesis");
+						throw ("shit after closing parenthesis");
 						return false; // после закрывающей скобки идет не знак: ()(), ()ab, 
 					}
 				}

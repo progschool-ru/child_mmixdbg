@@ -45,8 +45,6 @@ function Environment() {
 		var real_addr = this.getRealAddr(addr);
 		/*if (!(ireal_addr > 0 && ireal_addr + multibyte.size < this.MEMORY_SIZE))
 			throw "Bad multibyte write space";*/
-		console.log("real_addr:");
-		console.log(real_addr);
 		for (var i = 0; i < multibyte.size; ++i) {
 			this.memory[real_addr + i] = multibyte.bytes[i];
 		}
@@ -78,7 +76,6 @@ function Environment() {
 	 */
 	this.backupMem = function() {
 		this.prevMem = replicateArray(this.memory);
-		if (this.prevMem == null) console.log("fuck you nigger");
 	}
 
 	this.backupMem();

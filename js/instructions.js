@@ -7,26 +7,52 @@ var OPCODE_LOC = -1,
 	OPCODE_GREG = -3;
 
 function parseExprArg(arg) {
-	if (arg[0] == '$') 
-		return parseInt(arg.substring(1));
-	else if (arg[0] == '#')
-		return parseInt(arg.substring(1), 16);
-	else if (/^\d+$/.test(arg))
-		return parseInt(arg);
-	else {
+	if (arg[0] == '$') { 
+		return [parseInt(arg.substring(1))];
+	} else if (arg[0] == '#') {
+		return [parseInt(arg.substring(1), 16)];
+	} else if (/^\d+$/.test(arg)) {
+		return [parseInt(arg)];
+	} else if (checkArithmetic(arg)) {
+
+	} else {
 		//throw "Undefined behaviour for EXPR argument";
 		makeSyntaxError("Undefined behaviour for EXPR argument", arg, -123);
 	}
 }
 
+/* 
+   Превращагет аргумент в цепочку байт
+   arg - строчка
+   Возвращает массив
+ */
+function reduceExprArg(arg, namespace) {
+	if (typeof arg == 'number') {
+		return intToBytes(parseInt(arg));
+	} else if (arg[0] == "\"" && arg[arg.length - 1] == "\"") {
+		return arg.substring(1, arg.length - 1).split('').map(ord);
+	} else if (regexCheckNumber(arg)) {
+		if (arg[0] == '#') 
+			return new Multibyte(8, arg).bytes;
+		else
+			return intToBytes(parseInt(arg));
+	} else if (namespace[arg] !== undefined) {
+		return reduceExprArg(namespace[arg], namespace);
+	} else
+		return [];
+}
+
 function xyzTemplate(instrOpcode) {
 	return function(expr) {
-		return [
+	/*	return [
 			instrOpcode,
 			parseExprArg(expr[0]),
 			parseExprArg(expr[1]),
 			parseExprArg(expr[2])
-		];
+		];*/
+		return [
+			instrOpcode
+		].concat(parseExprArg(expr[0])).concat(parseExprArg(expr[1])).concat(parseExprArg(expr[2]));
 	}
 }
 
@@ -232,7 +258,8 @@ function reduceLine(line, namespace, lineNr) {
 function postcompileCode(program) {
 	for (var instrIndex in program.code) { 
 		var instr = program.code[instrIndex];
-		program.bytecode = program.bytecode.concat(assembleLine(reduceLine(instr, program.namespace, instrIndex)));
+		var reduced = reduceLine(instr, program.namespace, instrIndex);
+		program.bytecode = program.bytecode.concat(assembleLine(reduced));
 	}
 	
 	return program;

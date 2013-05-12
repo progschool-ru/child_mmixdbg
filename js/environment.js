@@ -9,6 +9,7 @@ function Environment() {
 	this.registers["rBB"] = new Multibyte(8, null);
 	this.registers["rTT"] = new Multibyte(8, null);
 	this.registers["rWW"] = new Multibyte(8, null);
+	this.prevMem = null;
 
 	this.readRegister = function(registerName) {
 		var reg = this.registers[registerName];
@@ -60,16 +61,25 @@ function Environment() {
 		return res;
 	}
 
-	this.calcMemChanges = function(oldEnv) {
+	/*
+	 * XORs prevMem and memory; returns XOR result
+	 * if result[i] == 0 -> i'th memory cell is not changed
+	 */
+	this.calcMemChanges = function() {
 		var memChg = new Array(this.MEMORY_SIZE);
 		for (var i = 0; i < this.MEMORY_SIZE; ++i) {
-			memChg[i] = this.memory[i] ^ oldEnv.memory[i];
+			memChg[i] = this.memory[i] ^ this.prevMem[i];
 		}
-
 		return memChg;
 	}
 
-	this.calcRegChanges = function() {
-
+	/*
+	 * Saves current memory state 
+	 */
+	this.backupMem = function() {
+		this.prevMem = replicateArray(this.memory);
+		if (this.prevMem == null) console.log("fuck you nigger");
 	}
+
+	this.backupMem();
 }

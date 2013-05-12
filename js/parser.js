@@ -15,7 +15,7 @@ function regexCheckRegister(pretendRegister) {
 }
 
 function checkReservedWord(pretendWord) {
-	return contains(MMIX_KEYWORDS, pretendWord);
+	return MMIX_KEYWORDS.indexOf(pretendWord) != -1;
 }
 
 function regexCheckUserSpaceWord(pretendWord) {
@@ -167,7 +167,7 @@ function parseLine(line) {
 			if (realIndex == 0) { 
 				if (checkReservedWord(capitalPart)) {
 					result.operand = capitalPart;
-				} else if (checkUserSpaceWord(part)) { // метка - первое слово
+				} else if (regexCheckUserSpaceWord(part)) { // метка - первое слово
 					result.label = part;
 				} else { // первое слово не опреранд и не метка
 					throw parsingError("Unrecognized lexem", part, line);

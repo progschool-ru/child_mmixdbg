@@ -1,6 +1,5 @@
 function Machine(loadAddress) {
 	this.env = new Environment();
-	this.prevEnv = null;
 
 //	this.codeStart = this.env.MEMORY_SIZE + 1;
 	this.progSize = 0; // в скомпилированных командах
@@ -23,7 +22,7 @@ function Machine(loadAddress) {
 
 	this.runProgram = function() {
 		for (var i = 0; i < this.progSize; ++i) {
-				this.oscillatorTick();	
+			this.oscillatorTick();	
 		}
 	}
 
@@ -39,10 +38,6 @@ function Machine(loadAddress) {
 			throw "Invalid opcode `" + currentCmd[0];
 
 		this.cmdOffset++;
-	}
-
-	this.backupEnv = function() {
-		this.prevEnv = this.env;
 	}
 
 	// debug functionality

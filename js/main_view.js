@@ -21,6 +21,12 @@ function createMMIXmemView() {
 	}
 	mtable_code += "</tr>";
 
+	var changes = null;
+	if (mmixMachine.env.prevMem) {
+		console.log("calculating changes");
+		changes = mmixMachine.env.calcMemChanges();
+	}
+
 	for (var i = 0; i < VIEW_MEM_HEIGHT; ++i) {
 		mtable_code += "<tr>";
 		mtable_code += "<td><b>#" + (i * 16).toString(16).addLeadingZeros(16) + "</b></td>";
@@ -30,10 +36,22 @@ function createMMIXmemView() {
 				mtable_code += "<td></td>";
 			}
 			var addr = i * VIEW_MEM_WIDTH + j;
-			mtable_code += "<td id=\"mmix_mem\"" + addr + ">" + mmixMachine.env.memory[addr].toString(16).addLeadingZeros(2) + "</td>";
+
+			var byteStrVal = mmixMachine.env.memory[addr].toString(16).addLeadingZeros(2);
+			if (byteStrVal != "00")
+				console.log("byteStrVal: " + typeof mmixMachine.env.memory[addr]);
+			if (!changes)
+				mtable_code += "<td id=\"mmix_mem" + addr + "\">" + byteStrVal + "</td>";
+			else if (changes[addr] == 0)
+				mtable_code += "<td id=\"mmix_mem" + addr + "\">" + byteStrVal + "</td>";
+			else if (changes[addr] != 0)
+				mtable_code += "<td id=\"mmix_mem" + addr + "\"><span class=changed>" + byteStrVal + "</span></td>"  
 		}
 		mtable_code += "</tr>";
 	}
+
+	console.log("backing up memory");
+	mmixMachine.env.backupMem();
 
 	document.getElementById("mmix_mem").innerHTML = mtable_code;
 }

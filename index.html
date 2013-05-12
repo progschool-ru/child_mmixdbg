@@ -21,7 +21,7 @@
 
 		<div class="toolbar">
 			<div class="toolbutton" onclick="resetMachine()" onmouseover="buttonMouseOver('btn_rst')" onmouseout="buttonMouseOut('btn_rst')" id="btn_rst">Reset machine</div>
-			<div class="toolbutton" onclick="alert(); updateViews()" onmouseover="buttonMouseOver('btn_upd')" onmouseout="buttonMouseOut('btn_upd')" id="btn_upd">Update views</div>
+			<div class="toolbutton" onclick="updateViews()" onmouseover="buttonMouseOver('btn_upd')" onmouseout="buttonMouseOut('btn_upd')" id="btn_upd">Update views</div>
 			<!-- <input onclick="resetMachine()" type="button" value="Reset machine" /> -->
 			<!-- <input onclick="updateViews()" type="button" value="Update view" /> -->
 		</div>
@@ -29,8 +29,13 @@
 		
 		<div class="debugger">	
 			<div class="code">
-				<textarea id="usercode"></textarea><br/>
-				<input onclick="runCode(document.getElementById('usercode').value)" type="button" value="Run!" />
+				<textarea id="usercode">
+l IS 500
+a GREG 8
+b GREG 9
+ADD $0,a,b</textarea><br/>
+				<!-- <input onclick="runCode(document.getElementById('usercode').value)" type="button" value="Run!" /> -->
+				<div class="toolbutton" onclick="runCode(document.getElementById('usercode').value)" onmouseover="buttonMouseOver('btn_run')" onmouseout="buttonMouseOut('btn_run')" id="btn_run">Run</div>
 			</div>
 			<div class="mmix_info">
 				<div class="mmix_env">

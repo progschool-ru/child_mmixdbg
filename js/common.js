@@ -45,6 +45,9 @@ function replicateArray(arr) {
 	return arr.map( function(x) { return x; } );
 }
 
+function sum(a, b) {
+	return a + b;
+}
 
 function intToBytes(intval) {
 	var result = [];
@@ -54,4 +57,8 @@ function intToBytes(intval) {
 	result.push(intval & 0xff);
 
 	return result;
+}
+
+function flatten(array) {
+	 return [].concat.apply([], array);
 }

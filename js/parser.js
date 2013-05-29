@@ -148,6 +148,7 @@ function parseExpr(expr) {
 }
 
 function parseLine(line) {
+	line = line.trim();
 	var splitted = line.split(" ");
 	
 	var result = {

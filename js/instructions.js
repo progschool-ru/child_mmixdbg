@@ -1,46 +1,5 @@
 var mmixInstrSet = []; // можно обращаться как через имя инструкции в 
                        // верхнем регистре, так и через опкод(если есть (для BYTE нету))
-/* все функции run* работают в контексте ммикс-машины */
-
-var OPCODE_LOC = -1, 
-	OPCODE_IS = -2,
-	OPCODE_GREG = -3;
-
-function parseExprArg(arg) {
-	if (arg[0] == '$') { 
-		return [parseInt(arg.substring(1))];
-	} else if (arg[0] == '#') {
-		return [parseInt(arg.substring(1), 16)];
-	} else if (/^\d+$/.test(arg)) {
-		return [parseInt(arg)];
-	} else if (checkArithmetic(arg)) {
-
-	} else {
-		//throw "Undefined behaviour for EXPR argument";
-		makeSyntaxError("Undefined behaviour for EXPR argument", arg, -123);
-	}
-}
-
-/* 
-   Превращагет аргумент в цепочку байт
-   arg - строчка
-   Возвращает массив
- */
-function reduceExprArg(arg, namespace) {
-	if (typeof arg == 'number') {
-		return intToBytes(parseInt(arg));
-	} else if (arg[0] == "\"" && arg[arg.length - 1] == "\"") {
-		return arg.substring(1, arg.length - 1).split('').map(ord);
-	} else if (regexCheckNumber(arg)) {
-		if (arg[0] == '#') 
-			return new Multibyte(8, arg).bytes;
-		else
-			return intToBytes(parseInt(arg));
-	} else if (namespace[arg] !== undefined) {
-		return reduceExprArg(namespace[arg], namespace);
-	} else
-		return [];
-}
 
 function xyzTemplate(instrOpcode) {
 	return function(expr) {
@@ -50,41 +9,57 @@ function xyzTemplate(instrOpcode) {
 			parseExprArg(expr[1]),
 			parseExprArg(expr[2])
 		];*/
-		return [
-			instrOpcode
-		].concat(parseExprArg(expr[0])).concat(parseExprArg(expr[1])).concat(parseExprArg(expr[2]));
+		// return [
+		// 	instrOpcode
+		// ].concat(parseExprArg(expr[0])).concat(parseExprArg(expr[1])).concat(parseExprArg(expr[2]));
+		return [instrOpcode, expr[0], expr[1], expr[2]];
 	}
 }
 
-// добавляет представление функции 
-function describeInstruction(_asciiName, _opcode, _runFunction) {
+/* Описывает инструкцию 
+   asciiName - 'ADD', 'SUB', 'IS', ..
+   opcode - #20, #...
+   sizeFunction(expr:[String], namespace:Map String->Int) - размер инструкции в байтах
+   asmFunction(expr:[String], namespace:Map String->Int) - преобразует инструкцию в [Byte]
+   runFunction(context:Machine, commandBytes:[Byte]) - как должна работать в контексте MMIX-машины
+   macroFunction(program:Program, expr:[String]) - поведение макроса
+ */
+function describeInstr(_asciiName, _opcode, _sizeFunction, _asmFunction, _runFunction, _macroFunction) {
 	mmixInstrSet[_opcode] = mmixInstrSet[_asciiName] = {
 		opcode: _opcode,
+		size: _sizeFunction,
 		asciiName: _asciiName,
-		asmFunction: xyzTemplate(_opcode),
-		runFunction: _runFunction
+		asmFunction: _asmFunction,
+		runFunction: _runFunction,
+		macroFunction: _macroFunction
 	};
 }
 
+// добавляет представление обыкновенной функции в 4 байта 
+function describeCommonInstr(_asciiName, _opcode, _runFunction) {
+	describeInstr(_asciiName, _opcode, function(expr, namespace) { return 4; }, xyzTemplate(_opcode), _runFunction);
+}
+
 // для РОН
-function intToReg(rootEnv, registerNo) {
+function readRegisterNo(rootEnv, registerNo) {
 	return rootEnv.readRegister("$" + registerNo.toString());
 }
 
+/* все функции run* работают в контексте ммикс-машины */
 // context - MMIX-мащины
 function runAdd(context, commandBytes) {
-	var regResult = intToReg(context.env, commandBytes[1]),
-		regA = intToReg(context.env, commandBytes[2]),
-		regB = intToReg(context.env, commandBytes[3]);
+	var regResult = readRegisterNo(context.env, commandBytes[1]),
+		regA = readRegisterNo(context.env, commandBytes[2]),
+		regB = readRegisterNo(context.env, commandBytes[3]);
 
 	regResult.add(regA).add(regB);
 }
 
 function LdWrapper(bytesize) {
 	return function(context, commandBytes) {
-		var x = intToReg(context.env, commandBytes[1]),
-			y = intToReg(context.env, commandBytes[2]),
-			z = intToReg(context.env, commandBytes[3]);
+		var x = readRegisterNo(context.env, commandBytes[1]),
+			y = readRegisterNo(context.env, commandBytes[2]),
+			z = readRegisterNo(context.env, commandBytes[3]);
 		var temp_sum = new Multibyte(8, null);
 		temp_sum.add(y).add(z);
 		x.set(context.env.readMemoryMultibyte(bytesize, temp_sum));
@@ -94,9 +69,9 @@ function LdWrapper(bytesize) {
 // на самом деле bytesize - количество байт в мультибайте
 function StWrapper(bytesize) {
 	return function(context, commandBytes) {
-		var x = multibyteCast(bytesize, intToReg(context.env, commandBytes[1])),
-			y = intToReg(context.env, commandBytes[2]),
-			z = intToReg(context.env, commandBytes[3]);
+		var x = multibyteCast(bytesize, readRegisterNo(context.env, commandBytes[1])),
+			y = readRegisterNo(context.env, commandBytes[2]),
+			z = readRegisterNo(context.env, commandBytes[3]);
 		var temp_sum = new Multibyte(8, null);
 		temp_sum.add(y).add(z);
 		context.env.writeMemoryMultibyte(x, temp_sum);
@@ -104,168 +79,48 @@ function StWrapper(bytesize) {
 }
 
 function runStco(context, commandBytes) {
-	var y = intToReg(context.env, commandBytes[2]),
-		z = intToReg(context.env, commandBytes[3]);
+	var y = readRegisterNo(context.env, commandBytes[2]),
+		z = readRegisterNo(context.env, commandBytes[3]);
 	var temp_sum = new Multibyte(8, null);
 	temp_sum.add(y).add(z);
 	context.env.writeMemoryMultibyte(new Multibyte(1, '#' + commandBytes[1].toString(16)), temp_sum);
 }
 
-// ТУТ ОПИСЫВАТЬ ПРАВИЛА АССЕМБЛИРОВАНИЯ И ЗАПУСКА ИНСТРУКЦИЙ
+mmixInstrSet["IS"] = mmixInstrSet["GREG"] = mmixInstrSet["LOC"] = {
+	opcode: -1,
+	asciiName: "IS",
+	size: function(expr, namespace) { return 0; },
+	asmFunction: function(expr) { return []; },
+	runFunction: null,
+	macroFunction: null
+}
+mmixInstrSet["GREG"].asciiName = "GREG";
+mmixInstrSet["LOC"].asciiName = "LOC";
 
 /* BYTE - особая инструкция */
 mmixInstrSet["BYTE"] = {
-		opcode: -1,
-		asciiName: "BYTE",
-		asmFunction: function (expr) {
-			var bytes = new Array(expr.length);
-			for (var i in expr) {
-				bytes[i] = expr[i] & 0xff;
-			}
-			return bytes;
-		},
-		runFunction: function() {}
-	};
-
-describeInstruction("ADD", 0x20, runAdd);
-
-describeInstruction("LDB", 0x80, LdWrapper(1));
-describeInstruction("LDT", 0x81, LdWrapper(4));
-describeInstruction("LDW", 0x84, LdWrapper(2));
-describeInstruction("LDO", 0x85, LdWrapper(8));
-
-describeInstruction("STB", 0xa0, StWrapper(1));
-describeInstruction("STT", 0xa1, StWrapper(4));
-describeInstruction("STW", 0xa4, StWrapper(2));
-describeInstruction("STO", 0xa5, StWrapper(8));
-
-describeInstruction("STCO", 0xb4, runStco);
-
-// ассемблирует строку кода
-// OLD SHIT
-/*function (line, program) {
-	var parsed = parseLine(line);
-	console.log("parsed.label is `" + (parsed.label) + "`");
-	if (parsed.label != null) {
-		console.log("program.namespace is ");
-		console.log(program.namespace["a"]);
-		program.namespace[parsed.label] = program.offset + program.commandCounter * COMMAND_SIZE;
-	}
-
-	return mmixInstrSet[parsed.operand].asmFunction(parsed.expr);
-}*/
-
-function assembleLine(parsedLine) {
-	return mmixInstrSet[parsedLine.operand].asmFunction(parsedLine.expr);
+	opcode: -1,
+	asciiName: "BYTE",
+	size: function(expr, namespace) {
+		return flatten(expr.map(function(e) { return reduceExprArg(namespace, e); } )).length;
+	},
+	asmFunction: function(expr) {
+		return flatten(expr.map(function(e) { return reduceExprArg(namespace, e); }));
+	},
+	runFunction: function() {},
+	macroFunction: function() {}
 }
 
-function nextInstrAddr(program) {
-	return program.offset + (program.commandCounter + 1) * COMMAND_SIZE;
-}
+describeCommonInstr("ADD", 0x20, runAdd);
 
-/*
-	Прекомпиляция строчки:
-	1) Обрабатываются макросы LOC, IS, GREG
-	2) Записываются в program.namespace адреса всех меток
- */
-function precompileLine(line, program, lineNr) {
-	var parsed = parseLine(line);
-	var macroArgMultibyte = null;
-	var oper = parsed.operand;
+describeCommonInstr("LDB", 0x80, LdWrapper(1));
+describeCommonInstr("LDT", 0x81, LdWrapper(4));
+describeCommonInstr("LDW", 0x84, LdWrapper(2));
+describeCommonInstr("LDO", 0x85, LdWrapper(8));
 
-	program.namespace[lineNr] = nextInstrAddr(program);
-	if (isMacro(oper)) {
-		macroArgMultibyte = new Multibyte(4, parsed.expr[0]);		
-		program.namespace[lineNr] += COMMAND_SIZE; // для макроса @ означает адрес следующей инструкции
-	}
+describeCommonInstr("STB", 0xa0, StWrapper(1));
+describeCommonInstr("STT", 0xa1, StWrapper(4));
+describeCommonInstr("STW", 0xa4, StWrapper(2));
+describeCommonInstr("STO", 0xa5, StWrapper(8));
 
-	if (oper == "LOC") { // макрос
-		if (program.commandCounter != 0) 
-			makeSyntaxError("LOC macro is too late!", line, -123);
-		program.offset = macroArgMultibyte.toInteger();
-	} else if (oper == "IS") {
-		program.namespace[parsed.label] = parsed.expr[0];		
-	} else if (oper == "GREG") { // макрос
-		program.namespace[parsed.label] = "$" + program.gregCounter.toString();
-		program.initRegisters[program.gregCounter] = macroArgMultibyte.toInteger();
-		program.gregCounter--;		
-	} else { // обычная команда
-		//program.code = program.code.concat(assembleLine(line, program));
-		var parsed = parseLine(line);
-		if (parsed.label != null) {
-			program.namespace[parsed.label] = program.offset + program.commandCounter * COMMAND_SIZE;
-		}
-		program.code = program.code.concat(line);
-		program.commandCounter++;
-	}
-}
-
-/*
-   Прекомпиляция кода = прекомпиляция всех строк
-   Код на этом этапе не ассемблируется
- */
-function precompileCode(code) {
-//	var program = [];
-	var program = { 
-		code: [], // Строковое представление
-		bytecode: [],
-		offset: 0,
-		commandCounter: 0,
-		gregCounter: 254, // следующий претендент на GREG
-		initRegisters: [], // только для РОН
-		namespace: [] // сопоставление метка->адрес
-	};
-	for (var i = 0; i < 256; ++i)
-		program.initRegisters[i] = 0;
-		            
-	var lines = code.split("\n");
-	for (var lineIndex in lines) {
-		//console.log("Precompiling line:" + lines[lineIndex]);
-		var line = lines[lineIndex];
-		if (/^\s*$/.test(line))
-			continue;
-
-		/*
-		 * program = nextLine(line, program) - если в nextLine нельзя менять program напрямую
-		 * nextLine(line, program) - если можно
-		 */
-		//program = program.concat(assembleLine(line));
-		precompileLine(line, program, lineIndex);
-	}
-
-	return program;
-}
-
-/* Заменяет метки их численнымии эквивалентами */
-function reduceLine(line, namespace, lineNr) {
-	var parsed = parseLine(line);
-	for (var i = 0; i < parsed.expr.length; ++i) {
-		if (/^[a-zA-Z]{1}\w*$/.test(parsed.expr[i])) { // значит текущий аргумент нужно брать из пространства имен
-			if (namespace[parsed.expr[i]] === undefined) {
-				//throw "reduceLine -> can't parse" + parsed.expr[i];
-				makeSemanticError("Undefined namespace element " + parsed.expr[i], line, -123);
-			} else
-				parsed.expr[i] = namespace[parsed.expr[i]];
-		} else if (parsed.expr[i] == "@") {
-			parsed.expr[i] = namespace[lineNr];
-		}
-	}
-
-	return parsed;
-}
-
-
-function postcompileCode(program) {
-	for (var instrIndex in program.code) { 
-		var instr = program.code[instrIndex];
-		var reduced = reduceLine(instr, program.namespace, instrIndex);
-		program.bytecode = program.bytecode.concat(assembleLine(reduced));
-	}
-	
-	return program;
-}
-
-// Обертка для precompile и postcompile
-function compileCode(code) {
-	return postcompileCode(precompileCode(code));
-}
+describeCommonInstr("STCO", 0xb4, runStco);

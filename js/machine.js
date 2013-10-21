@@ -4,20 +4,26 @@ function Machine(loadAddress) {
 //	this.codeStart = this.env.MEMORY_SIZE + 1;
 	this.progSize = 0; // в скомпилированных командах
 	this.cmdOffset = 0;
+	this.offsets = null; // массив чисел - смещений подпрограмм в памяти
 
-	this.loadProgram = function(program) {
-//		this.codeStart = Math.min(offset, this.codeStart);
-		//if (program.bytecode.length % 4 != 0)
-		//	throw "Invalid program size! Length modulo 4 not equals 0!";
-		this.progSize = program.bytecode.length / 4;
-		this.codeStart = program.offset;
-		for (var i = 0; i < program.bytecode.length; ++i) {
-			this.env.memory[program.offset + i] = program.bytecode[i];
+	this.loadProgram = function (program) {
+	    this.program = program;
+	    var th = this;
+	    program.subprograms.forEach(function (subprog, i, arr) {
+	        subprog.bytecode.forEach(function (byte, i, sp) { th.env.memory[subprog.offset + i] = byte; });
+	    });
+
+	    for (var i = 0; i < 255; ++i) {	        
+	        this.env.registers["$" + i] =
+                new Multibyte(8, "#" + (program.nm_types[i] == NM_REG ? program.initRegisters[i].toString() : 0));
 		}
-		
-		for (var i = 0; i < 255; ++i) {
-			this.env.registers["$" + i] = new Multibyte(8, "#" + program.initRegisters[i].toString());
-		}
+	}
+
+	this.program = null;
+
+	this.compileLoadProgram = function(str_program) {
+	    var program = compileProgram(str_program);	    
+	    this.loadProgram(program);
 	}
 
 	this.runProgram = function() {

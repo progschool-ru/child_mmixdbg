@@ -3,20 +3,24 @@
    arg - строчка
    Возвращает массив
  */
-function reduceExprArg(arg, namespace) {
-	if (typeof arg == 'number') {
-		return intToBytes(parseInt(arg));
-	} else if (arg[0] == "\"" && arg[arg.length - 1] == "\"") {
-		return arg.substring(1, arg.length - 1).split('').map(ord);
-	} else if (regexCheckNumber(arg)) {
-		if (arg[0] == '#') 
-			return new Multibyte(8, arg).bytes;
-		else
-			return intToBytes(parseInt(arg));
-	} else if (namespace[arg] !== undefined) {
-		return reduceExprArg(namespace[arg], namespace);
-	} else
-		return [];
+function reduceExprArg(namespace) {
+    return function (arg) {
+        if (typeof arg == 'string' && arg[0] == '$') {
+            return parseInt(arg.substring(1));
+        } else if (typeof arg == 'number') {
+            return intToBytes(parseInt(arg));
+        } else if (arg[0] == "\"" && arg[arg.length - 1] == "\"") {
+            return arg.substring(1, arg.length - 1).split('').map(ord);
+        } else if (regexCheckNumber(arg)) {
+            if (arg[0] == '#')
+                return new Multibyte(8, arg).bytes;
+            else
+                return intToBytes(parseInt(arg));
+        } else if (namespace[arg] !== undefined) {
+            return reduceExprArg(namespace[arg], namespace);
+        } else
+            return [];
+    };
 }
 
 /* Принимает текст программы. возвращает программу в формате, который нарисован у меня на окне */
@@ -43,16 +47,23 @@ function calcConstantValue(program) {
   Записывает в пространство имен программы (program.namespace) численные эквиваленты, 
   определяемые макросами IS, GREG
 */
+var NM_NONREG = 0;
+var NM_REG = 1;
 function fillMacroAliases(program) {
 	var localGregCounter = 255;
 	if (!program.namespace) 
-		program.namespace = {};
+	    program.namespace = {};
+	if (!program.nm_types)
+	    program.nm_types = {};
 	program.lines.filter(function(line) { return line.operand == "IS" || line.operand == "GREG"; }).forEach(
 		function(line, i, ISLines) {
-			if (line.operand == "IS")
-				program.namespace[line.label] = calcConstantValue(program)(line.expr[0]);
-			else
-				program.namespace[line.label] = localGregCounter--;
+		    if (line.operand == "IS") {
+		        program.namespace[line.label] = calcConstantValue(program)(line.expr[0]);
+		        program.nm_types[line.label] = NM_NONREG;
+		    } else {
+		        program.namespace[line.label] = localGregCounter--;
+		        program.nm_types[line.label] = NM_REG;
+		    }
 		}
 	);
 }
@@ -136,7 +147,7 @@ function replaceAliases(program) {
 function assembleProgram(program) {
 	function generateInstruction(line) {
 		var instrDescriptor = mmixInstrSet[line.operand];
-		return instrDescriptor.asmFunction(line.expr);
+		return instrDescriptor.asmFunction(line.expr.map(reduceExprArg(program.namespace)));
 	}
 
 	return program.subprograms.map(function(subprog) {
@@ -160,20 +171,27 @@ LOC 5\n\
 secadd ADD $0,$7,$8\n\
 thiadd ADD $9,$10,$11";
 
-function tmp() {
-	function mlog(str, val) {
-		console.log(str);
-		console.log(val);
-	}
-	var program = parseProgram(testProgram);
+function mlog(str, val) {
+	console.log(str);
+	console.log(val);
+}
+
+/*
+  Компиляция программы в байткод
+  prog - строчка, разные строки разделены посредством \n
+  Возвращает массив объектов-подпрограмм:
+    .offset - место в памяти, с которого начинать загрузку подпрограммы
+    .bytecode - массив байт, загружаемых в память
+*/
+function compileProgram(prog) {
+	var program = parseProgram(prog);
 	fillMacroAliases(program);
-	mlog('Macro filled: ', program);
 	calcCommandSizes(program);
-	mlog('Command sizes calculated: ', program);
 	collectLabels(program);
-	mlog('Labels collected: ', program);
-	replaceAliases(program);
-	mlog('Aliases replaced: ', program);
-	var subprograms = assembleProgram(program);
-	mlog('Program assembled: ', subprograms);
+	program.subprograms = assembleProgram(program);
+	return program;
+}
+
+function tmp() {
+    return compileProgram(testProgram);
 }

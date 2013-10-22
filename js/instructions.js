@@ -35,7 +35,7 @@ function describeInstr(_asciiName, _opcode, _sizeFunction, _asmFunction, _runFun
 	};
 }
 
-// добавляет представление обыкновенной функции в 4 байта 
+// добавляет представление обыкновенной инструкции в 4 байта 
 function describeCommonInstr(_asciiName, _opcode, _runFunction) {
 	describeInstr(_asciiName, _opcode, function(expr, namespace) { return 4; }, xyzTemplate(_opcode), _runFunction);
 }
@@ -48,6 +48,7 @@ function readRegisterNo(rootEnv, registerNo) {
 /* все функции run* работают в контексте ммикс-машины */
 // context - MMIX-мащины
 function runAdd(context, commandBytes) {
+    //console.log("Adding! Arguments = " + commandBytes[1] + ", " + commandBytes[2] + ", " + commandBytes[3]);
 	var regResult = readRegisterNo(context.env, commandBytes[1]),
 		regA = readRegisterNo(context.env, commandBytes[2]),
 		regB = readRegisterNo(context.env, commandBytes[3]);

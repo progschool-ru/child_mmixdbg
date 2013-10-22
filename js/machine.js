@@ -2,16 +2,21 @@ function Machine(loadAddress) {
 	this.env = new Environment();
 
 //	this.codeStart = this.env.MEMORY_SIZE + 1;
-	this.progSize = 0; // в скомпилированных командах
-	this.cmdOffset = 0;
-	this.offsets = null; // массив чисел - смещений подпрограмм в памяти
+	this.instrCount = 0; // в скомпилированных командах
+	this.instrNo = 0; // Какая по счету выполняется инструкция в текущей подпрограмме
+	this.subprogIndex = 0;
+	this.program = null; // откомпилированная (из compiler.js) программа
+	this.subprogs = null; // просто ссылка на this.program.subprograms
 
 	this.loadProgram = function (program) {
 	    this.program = program;
+	    this.subprogs = this.program.subprograms;
 	    var th = this;
 	    program.subprograms.forEach(function (subprog, i, arr) {
 	        subprog.bytecode.forEach(function (byte, i, sp) { th.env.memory[subprog.offset + i] = byte; });
+	        th.instrCount += subprog.bytecode.length;
 	    });
+	    this.instrCount /= 4;
 
 	    for (var i = 0; i < 255; ++i) {	        
 	        this.env.registers["$" + i] =
@@ -19,31 +24,40 @@ function Machine(loadAddress) {
 		}
 	}
 
-	this.program = null;
-
 	this.compileLoadProgram = function(str_program) {
 	    var program = compileProgram(str_program);	    
 	    this.loadProgram(program);
 	}
 
 	this.runProgram = function() {
-		for (var i = 0; i < this.progSize; ++i) {
-			this.oscillatorTick();	
+		for (var i = 0; i < this.instrCount; ++i) {
+		    this.execNextInstr();
 		}
 	}
 
-	this.oscillatorTick = function() {
-		if (this.cmdOffset > this.progSize) {
-			return;
-		}
-		var currentCmd = this.env.memory.slice(this.codeStart + this.cmdOffset * 4, this.codeStart + (this.cmdOffset + 1) * 4);
-		var instruction = mmixInstrSet[currentCmd[0]];
-		if (instruction !== undefined)		
-			mmixInstrSet[currentCmd[0]].runFunction(this, currentCmd);
-		else
-			throw "Invalid opcode `" + currentCmd[0];
+	this.execNextInstr = function () {
+        // если все подпрограммы закончились
+	    if (this.subprogIndex >= this.subprogs.length)
+	        return;
+	    // если в текущей подпрограмме больше нет инструкции, переходим к следующей
+	    if (this.instrNo >= this.subprogs[this.subprogIndex].bytecode.length / 4) {
+	        //console.log("Switching to next subprogram");
+	        this.subprogIndex++;
+	        this.instrNo = 0;
+	    }
 
-		this.cmdOffset++;
+        // считываем текущую инструкцию
+	    var off = this.subprogs[this.subprogIndex].offset + this.instrNo * 4;
+	    //console.log("Command offset: " + off);
+	    var currentCmd = this.env.memory.slice(off, off + 4);
+        
+	    var instruction = mmixInstrSet[currentCmd[0]];
+	    if (instruction !== undefined)
+	        mmixInstrSet[currentCmd[0]].runFunction(this, currentCmd);
+	    else
+	        throw "Invalid opcode `" + currentCmd[0] + "`";
+
+	    this.instrNo++;
 	}
 
 	// debug functionality

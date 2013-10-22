@@ -162,15 +162,6 @@ function assembleProgram(program) {
 	});
 }
 
-var testProgram = 
-"var1 IS 5\n\
-var2 IS 6\n\
-var3 IS (var1+var2)*2\n\
-firstadd ADD $1,$2,$3\n\
-LOC 5\n\
-secadd ADD $0,$7,$8\n\
-thiadd ADD $9,$10,$11";
-
 function mlog(str, val) {
 	console.log(str);
 	console.log(val);
@@ -192,6 +183,19 @@ function compileProgram(prog) {
 	return program;
 }
 
-function tmp() {
-    return compileProgram(testProgram);
+/* DEBUG PART */
+
+var testProgram =
+"var1 IS 5\n\
+var2 IS 6\n\
+var3 IS (var1+var2)*2\n\
+firstadd ADD $1,$2,$3\n\
+LOC 5\n\
+secadd ADD $0,$7,$8\n\
+thiadd ADD $9,$10,$11";
+
+function test() {
+    var prog = compileProgram(testProgram);
+    mmixMachine.loadProgram(prog);
+    mmixMachine.runProgram();
 }

@@ -61,7 +61,7 @@ function createMMIXView() {
 	createMMIXregView();
 
 	var rtable_code = "<table>";
-	for (var i = 0; i < 255; ++i) {
+	for (var i = 0; i < 256; ++i) {
 		rtable_code += "<tr>";
 		rtable_code += "<td><b>$" + i + "</b></td>";
 		rtable_code += "<td id=\"mmix_reg" + i + "\">" + mmixMachine.env.readRegister("$" + i).toString() + "</td>";
@@ -94,10 +94,10 @@ function runCode(code) {
 	mmixMachine.loadProgram(assembled, 0);
 	mmixMachine.runProgram();*/
 	resetMachine();
-	var compiled = compileCode(code);
+	var compiled = compileProgram(code);
 	console.log("Program compiled");
 	mmixMachine.loadProgram(compiled);
-	console.log("Program loaded to memory");
+	console.log("Program loaded to machine");
 	mmixMachine.runProgram();
 	console.log("Run successful");
 

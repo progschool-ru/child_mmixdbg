@@ -48,12 +48,13 @@ function readRegisterNo(rootEnv, registerNo) {
 /* все функции run* работают в контексте ммикс-машины */
 // context - MMIX-мащины
 function runAdd(context, commandBytes) {
-    //console.log("Adding! Arguments = " + commandBytes[1] + ", " + commandBytes[2] + ", " + commandBytes[3]);
+    console.log("Adding! Arguments = " + commandBytes[1] + ", " + commandBytes[2] + ", " + commandBytes[3]);
 	var regResult = readRegisterNo(context.env, commandBytes[1]),
 		regA = readRegisterNo(context.env, commandBytes[2]),
 		regB = readRegisterNo(context.env, commandBytes[3]);
 
 	regResult.add(regA).add(regB);
+	console.log("Resulting reg: " + regResult.toString());
 }
 
 function LdWrapper(bytesize) {

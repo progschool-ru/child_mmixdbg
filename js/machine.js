@@ -1,7 +1,6 @@
 function Machine(loadAddress) {
 	this.env = new Environment();
 
-//	this.codeStart = this.env.MEMORY_SIZE + 1;
 	this.instrCount = 0; // в скомпилированных командах
 	this.instrNo = 0; // Какая по счету выполняется инструкция в текущей подпрограмме
 	this.subprogIndex = 0;
@@ -18,9 +17,13 @@ function Machine(loadAddress) {
 	    });
 	    this.instrCount /= 4;
 
-	    for (var i = 0; i < 255; ++i) {	        
-	        this.env.registers["$" + i] =
-                new Multibyte(8, "#" + (program.nm_types[i] == NM_REG ? program.initRegisters[i].toString() : 0));
+	    for (var i = 0; i < 256; ++i) {
+	        if (program.gregInitValues[i] !== undefined)
+	            this.env.registers["$" + i] = new Multibyte(8, "#" + program.gregInitValues[i].toString(16));
+	        else
+	            this.env.registers["$" + i] = new Multibyte(8, "#0");
+	        //this.env.registers["$" + i] =
+            //    new Multibyte(8, "#" + (program.nm_types[i] == NM_REG ? program.initRegisters[i]: 0));
 		}
 	}
 
@@ -50,6 +53,7 @@ function Machine(loadAddress) {
 	    var off = this.subprogs[this.subprogIndex].offset + this.instrNo * 4;
 	    //console.log("Command offset: " + off);
 	    var currentCmd = this.env.memory.slice(off, off + 4);
+	    console.log("Executing: " + currentCmd);
         
 	    var instruction = mmixInstrSet[currentCmd[0]];
 	    if (instruction !== undefined)

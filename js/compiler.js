@@ -1,6 +1,7 @@
 /* 
    Превращагет аргумент в цепочку байт
-   arg - строчка
+   namespace - из program.namespace
+   arg - строковое значение аргумента
    Возвращает массив
  */
 function reduceExprArg(namespace) {
@@ -8,7 +9,7 @@ function reduceExprArg(namespace) {
         if (typeof arg == 'string' && arg[0] == '$') {
             return parseInt(arg.substring(1));
         } else if (typeof arg == 'number') {
-            return intToBytes(parseInt(arg));
+            return (parseInt(arg));
         } else if (arg[0] == "\"" && arg[arg.length - 1] == "\"") {
             return arg.substring(1, arg.length - 1).split('').map(ord);
         } else if (regexCheckNumber(arg)) {
@@ -17,7 +18,7 @@ function reduceExprArg(namespace) {
             else
                 return intToBytes(parseInt(arg));
         } else if (namespace[arg] !== undefined) {
-            return reduceExprArg(namespace[arg], namespace);
+            return reduceExprArg(namespace)(namespace[arg]);
         } else
             return [];
     };
@@ -53,16 +54,17 @@ function fillMacroAliases(program) {
 	var localGregCounter = 255;
 	if (!program.namespace) 
 	    program.namespace = {};
-	if (!program.nm_types)
-	    program.nm_types = {};
+	if (!program.gregInitValues)
+	    program.gregInitValues = {};
 	program.lines.filter(function(line) { return line.operand == "IS" || line.operand == "GREG"; }).forEach(
 		function(line, i, ISLines) {
 		    if (line.operand == "IS") {
 		        program.namespace[line.label] = calcConstantValue(program)(line.expr[0]);
-		        program.nm_types[line.label] = NM_NONREG;
 		    } else {
-		        program.namespace[line.label] = localGregCounter--;
-		        program.nm_types[line.label] = NM_REG;
+		        console.log("Greg for " + line.label + "; Setting program.gregInitValues[" + localGregCounter + "] to " + calcConstantValue(program)(line.expr[0]));
+		        program.namespace[line.label] = localGregCounter;
+		        program.gregInitValues[localGregCounter] = calcConstantValue(program)(line.expr[0]);
+		        localGregCounter--;
 		    }
 		}
 	);
@@ -145,9 +147,13 @@ function replaceAliases(program) {
   {offset:int, bytecode:[byte]} - потом его нужно будет загружать в MMIX-машину
 */
 function assembleProgram(program) {
-	function generateInstruction(line) {
-		var instrDescriptor = mmixInstrSet[line.operand];
-		return instrDescriptor.asmFunction(line.expr.map(reduceExprArg(program.namespace)));
+    function generateInstruction(line) {
+        if (isMacro(line.operand))
+            return [];
+	    var instrDescriptor = mmixInstrSet[line.operand];
+		var asm = instrDescriptor.asmFunction(line.expr.map(reduceExprArg(program.namespace)));
+		//console.log("Assembled line " + line.expr + ": " + asm);
+		return asm;
 	}
 
 	return program.subprograms.map(function(subprog) {
@@ -185,7 +191,7 @@ function compileProgram(prog) {
 
 /* DEBUG PART */
 
-var testProgram =
+var tp1 =
 "var1 IS 5\n\
 var2 IS 6\n\
 var3 IS (var1+var2)*2\n\
@@ -194,8 +200,19 @@ LOC 5\n\
 secadd ADD $0,$7,$8\n\
 thiadd ADD $9,$10,$11";
 
+var tp2 =
+"l IS 500\n\
+a GREG 8\n\
+b GREG 9\n\
+ADD $0,a,b";
+
 function test() {
-    var prog = compileProgram(testProgram);
+    var prog = compileProgram(tp1);
     mmixMachine.loadProgram(prog);
+    mmixMachine.runProgram();
+}
+
+function test2() {
+    mmixMachine.compileLoadProgram(tp2);
     mmixMachine.runProgram();
 }

@@ -1,7 +1,7 @@
 function Environment() {
 	this.COMMON_REGISTER_COUNT = 256;
 	this.SPECIAL_REGISTER_COUNT = 32;
-	this.registers = []; // array of Multibyte (octabyte)
+	this.registers = {}; // array of Multibyte (octabyte)
 	for (var i = 0; i < this.COMMON_REGISTER_COUNT; ++i) 
 		this.registers["$" + i] = new Multibyte(8, null);
 	for (var i = ord('A'); i <= ord('Z'); ++i)

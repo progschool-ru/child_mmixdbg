@@ -4,7 +4,6 @@ package
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.events.KeyboardEvent;
-	
 	 
 	public class MMIXCompiler extends Sprite
 	{
@@ -13,7 +12,7 @@ package
 		public var mode:String = MAINMODE; // режим отвечающий за то что происходит с MMIX-программой (компилируется, дебажится или пишется)
 		public var registers:Array = []; // Массив для хранения битов регистров
 		public var registersText:String; // Строка для вывода всех регистров на экран
-		public var memoryLimit:int = 332; // Количество октабайт, отображаемых на экране
+		public var memoryLimit:int = 64; // Количество октабайт, отображаемых на экране
 		public var memory:Array = []; // Массив для хранения битов памяти
 		public var memoryText:String; // Строка для вывода содержимого памяти на экран
 		public function MMIXCompiler() 
@@ -49,8 +48,8 @@ package
 			for (i = 0; i < 256; i++) 
 			{
 				registersText += "$" + i + " ";
-				if (i < 10) registersText += "  "; 
-				if (i < 100) registersText += "  ";
+				if (i < 10) registersText += " "; 
+				if (i < 100) registersText += " ";
 				registersText += "#";
 				for (j = 0 ; j < 16; j++)
 				{
@@ -58,14 +57,17 @@ package
 				}
 				registersText += '\n';
 			}
-			new ColoredText(18, 1055, 10, 220, 400, registersText, 0x000000, this, false);
+			new ColoredText(14, 1065, 10, 220, 400, registersText, 0x000000, this, false);
 				//Заполняем сегмент для содержимого памяти
 			memoryText = "";
 			for (i = 0; i < memoryLimit; i++) 
 			{
-				/*memoryText += "$" + i + " ";
-				if (i < 10) memoryText += "  "; 
-				if (i < 100) memoryText += "  ";*/
+				if (i % 2 == 0)
+				{
+					memoryText += "#";
+					memoryText += decimalToHex(8*i, 16);
+					memoryText += "   ";
+				}
 				for (j = 0 ; j < 16; j++)
 				{
 					memoryText += transformNumberSystem(memory[i][4 * j], memory[i][4 * j + 1],	memory[i][4 * j + 2], memory[i][4 * j + 3]);
@@ -76,8 +78,8 @@ package
 				else
 					memoryText += "   ";
 			}
-			new ColoredText(18, 515, 10, 500, 400, "00 01 02 03 04 05 06 07    08 09 0a 0b 0c 0d 0e 0f", 0x888888, this, false);
-			new ColoredText(18, 515, 35, 500, 380, memoryText, 0x000000, this, false);
+			new ColoredText(14, 610, 10, 570, 400, "00 01 02 03 04 05 06 07    08 09 0a 0b 0c 0d 0e 0f", 0x888888, this, false);
+			new ColoredText(14, 450, 35, 570, 370, memoryText, 0x000000, this, false);
 			//Этого блока потом быть не должно 
 			new ColoredText(40, 15, 15, 400, 500, "Тут будут кнопки", 0x000000, this, false);
 			new ColoredText(40, 515, 415, 400, 500, "Тут будут сообщения об ошибках", 0x000000, this, false);
@@ -95,6 +97,20 @@ package
 			if (numberInFour == 15) return 'f';
 			var returnedString:String = "";
 			returnedString += numberInFour;
+			return returnedString;
+		}
+		
+		public function decimalToHex(number:int, lenght:int) : String
+		//преобразовывает 10-чное число в строку нужной длины, содержащую 16-ричную запись этого числа
+		{
+			var returnedString:String = "";
+			returnedString = Number(number).toString(16);
+			var l:int = returnedString.length;
+			while (l < lenght)
+			{
+				l++;
+				returnedString = "0" + returnedString;
+			}
 			return returnedString;
 		}
 	}

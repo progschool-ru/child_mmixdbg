@@ -21,8 +21,7 @@ package
 				}
 				else
 				{
-					trace(txt.maxScrollV);
-				//	trace(1);
+					txtform.font = "Courier New";
 					//txt.mouseEnabled = false;
 				}
 				txt.defaultTextFormat = txtform;

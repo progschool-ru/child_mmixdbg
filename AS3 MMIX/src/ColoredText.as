@@ -21,7 +21,9 @@ package
 				}
 				else
 				{
-					txt.mouseEnabled = false;
+					trace(txt.maxScrollV);
+				//	trace(1);
+					//txt.mouseEnabled = false;
 				}
 				txt.defaultTextFormat = txtform;
 				txt.text = text;

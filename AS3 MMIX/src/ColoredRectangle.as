@@ -11,7 +11,6 @@ package
 				rectangle.graphics.beginFill(color, 1);
 				rectangle.graphics.drawRect(x, y, width, height);
 				shape.addChild(rectangle);
-				trace(213);
 		}
 	}
 

@@ -65,7 +65,7 @@ package
 				if (i % 2 == 0)
 				{
 					memoryText += "#";
-					memoryText += decimalToHex(8*i, 16);
+					memoryText += decimalToHex(8 * i, 16);
 					memoryText += "   ";
 				}
 				for (j = 0 ; j < 16; j++)
@@ -78,7 +78,7 @@ package
 				else
 					memoryText += "   ";
 			}
-			new ColoredText(14, 610, 10, 570, 400, "00 01 02 03 04 05 06 07    08 09 0a 0b 0c 0d 0e 0f", 0x888888, this, false);
+			new ColoredText(14, 610, 10, 410, 20, "00 01 02 03 04 05 06 07    08 09 0a 0b 0c 0d 0e 0f", 0x888888, this, false);
 			new ColoredText(14, 450, 35, 570, 370, memoryText, 0x000000, this, false);
 			//Этого блока потом быть не должно 
 			new ColoredText(40, 15, 15, 400, 500, "Тут будут кнопки", 0x000000, this, false);

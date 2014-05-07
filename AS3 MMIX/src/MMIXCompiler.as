@@ -8,6 +8,7 @@ package
 	public class MMIXCompiler extends Sprite
 	{
 		public const MAINMODE:String = "Main Mode";
+		public const RUNNING:String = "Running";
 		
 		public var mode:String = MAINMODE; // режим отвечающий за то что происходит с MMIX-программой (компилируется, дебажится или пишется)
 		public var registers:Array = []; // Массив для хранения битов регистров
@@ -15,6 +16,7 @@ package
 		public var memoryLimit:int = 64; // Количество октабайт, отображаемых на экране
 		public var memory:Array = []; // Массив для хранения битов памяти
 		public var memoryText:String; // Строка для вывода содержимого памяти на экран
+		public var runButton:Sprite = new Sprite; // Кнопка для запуска программы
 		public function MMIXCompiler() 
 		{
 			//addEventListener(Event.ENTER_FRAME, onFrame);
@@ -37,13 +39,60 @@ package
 					registers[i][j] = 0;
 				}
 			}
-			//отрисовываем все элементы, видные на экране
+			graphicsUpdate();
+		}
+		
+		public function onClick (e:Event = null):void
+		{
+			if (mode == MAINMODE)
+			{
+				trace(123);
+				mode = RUNNING;
+				graphicsUpdate();
+			}
+		}
+		
+		public function transformNumberSystem(bit1:int, bit2:int, bit3:int, bit4:int) : String
+		// переводит запись четырёх битов из 2-ичной системы в 16-ричную
+		{
+			var numberInFour:int = 8 * bit1 + 4 * bit2 + 2 * bit3 + bit4;
+			if (numberInFour == 10) return 'a';
+			if (numberInFour == 11) return 'b';
+			if (numberInFour == 12) return 'c';
+			if (numberInFour == 13) return 'd';
+			if (numberInFour == 14) return 'e';
+			if (numberInFour == 15) return 'f';
+			var returnedString:String = "";
+			returnedString += numberInFour;
+			return returnedString;
+		}
+		
+		public function graphicsUpdate() : void			//отрисовывает все элементы, видные на экране
+		{
+			var i:int = 0;
+			var j:int = 0;
+			while (this.numChildren) // удаляет все с поля
+			{
+				this.removeChildAt(0);
+				trace(mode);
+			}
 			new ColoredRectangle(15, 75, 400, 500, 0xffffff, this);
-			new ColoredText(16, 15, 75, 400, 500, "", 0x000000, this, true);
+			new ColoredText(16, 15, 75, 400, 500, "", 0x000000, this, true, true);
 			new ColoredRectangle(440, 0, 5, 600, 0x000000, this);
 			new ColoredRectangle(1040, 0, 5, 400, 0x000000, this);
 			new ColoredRectangle(440, 400, 1280 - 440, 5, 0x000000, this);
-				//Заполняем сегмент для содержимого регистров
+			//создаем кнопки
+			runButton.x = 15;
+			runButton.y = 15; 
+			runButton.graphics.beginFill(0x000000 , 10);
+			runButton.graphics.drawRect(0,0,100,40);
+			runButton.addEventListener(MouseEvent.CLICK, onClick);
+			addChild(runButton);
+			if(mode == MAINMODE)
+				new ColoredText(26, 40, 20, 100, 50, "Run", 0xffffff, this, false, false);
+			else if (mode == RUNNING)
+				new ColoredText(26, 17, 20, 100, 50, "Running", 0xffff00, this, false, false);
+			//Заполняем сегмент для содержимого регистров
 			registersText = ""; 
 			for (i = 0; i < 256; i++) 
 			{
@@ -57,8 +106,8 @@ package
 				}
 				registersText += '\n';
 			}
-			new ColoredText(14, 1065, 10, 220, 400, registersText, 0x000000, this, false);
-				//Заполняем сегмент для содержимого памяти
+			new ColoredText(14, 1065, 10, 220, 400, registersText, 0x000000, this, false, true);
+			//Заполняем сегмент для содержимого памяти
 			memoryText = "";
 			for (i = 0; i < memoryLimit; i++) 
 			{
@@ -78,26 +127,10 @@ package
 				else
 					memoryText += "   ";
 			}
-			new ColoredText(14, 610, 10, 410, 20, "00 01 02 03 04 05 06 07    08 09 0a 0b 0c 0d 0e 0f", 0x888888, this, false);
-			new ColoredText(14, 450, 35, 570, 370, memoryText, 0x000000, this, false);
+			new ColoredText(14, 610, 10, 410, 20, "00 01 02 03 04 05 06 07    08 09 0a 0b 0c 0d 0e 0f", 0x888888, this, false, true);
+			new ColoredText(14, 450, 35, 570, 370, memoryText, 0x000000, this, false, true);
 			//Этого блока потом быть не должно 
-			new ColoredText(40, 15, 15, 400, 500, "Тут будут кнопки", 0x000000, this, false);
-			new ColoredText(40, 515, 415, 400, 500, "Тут будут сообщения об ошибках", 0x000000, this, false);
-		}
-		
-		public function transformNumberSystem(bit1:int, bit2:int, bit3:int, bit4:int) : String
-		// переводит запись четырёх битов из 2-ичной системы в 16-ричную
-		{
-			var numberInFour:int = 8 * bit1 + 4 * bit2 + 2 * bit3 + bit4;
-			if (numberInFour == 10) return 'a';
-			if (numberInFour == 11) return 'b';
-			if (numberInFour == 12) return 'c';
-			if (numberInFour == 13) return 'd';
-			if (numberInFour == 14) return 'e';
-			if (numberInFour == 15) return 'f';
-			var returnedString:String = "";
-			returnedString += numberInFour;
-			return returnedString;
+			new ColoredText(40, 515, 415, 400, 500, "Тут будут сообщения об ошибках", 0x000000, this, false, true);
 		}
 		
 		public function decimalToHex(number:int, lenght:int) : String

@@ -9,7 +9,7 @@ package
 	public class ColoredText extends Sprite
 	{
 		
-		public function ColoredText(size:int, x:Number, y:Number, width:Number, height:Number, text:String, color:uint, shape:Sprite, isEditBox:Boolean) 
+		public function ColoredText(size:int, x:Number, y:Number, width:Number, height:Number, text:String, color:uint, shape:Sprite, isEditBox:Boolean, isMouseAllowed:Boolean) 
 		{
 				var txtform:TextFormat = new TextFormat;
 				txtform.size = size;
@@ -19,10 +19,13 @@ package
 					txt.type = TextFieldType.INPUT;
 					txt.border = true;
 				}
-				else
+				else if(isMouseAllowed)
 				{
 					txtform.font = "Courier New";
-					//txt.mouseEnabled = false;
+				}
+				else
+				{
+					txt.mouseEnabled = false;					
 				}
 				txt.defaultTextFormat = txtform;
 				txt.text = text;

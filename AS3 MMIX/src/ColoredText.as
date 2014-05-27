@@ -8,12 +8,12 @@ package
 	//Класс для удобного создания текстовых полей
 	public class ColoredText extends Sprite
 	{
+		public var txt:TextField = new TextField;
 		
 		public function ColoredText(size:int, x:Number, y:Number, width:Number, height:Number, text:String, color:uint, shape:Sprite, isEditBox:Boolean, isMouseAllowed:Boolean) 
 		{
 				var txtform:TextFormat = new TextFormat;
 				txtform.size = size;
-				var txt:TextField = new TextField;
 				if (isEditBox)
 				{
 					txt.type = TextFieldType.INPUT;

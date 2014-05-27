@@ -10,6 +10,8 @@ package
 		public const MAINMODE:String = "Main Mode";
 		public const RUNNING:String = "Running";
 		
+		public var programText:ColoredText; // переменная для получения введенного пользователем текста программы
+		public var programRunner:ProgramRunner; // отвечает за исполнение программы, введенной пользователем
 		public var mode:String = MAINMODE; // режим отвечающий за то что происходит с MMIX-программой (компилируется, дебажится или пишется)
 		public var registers:Array = []; // Массив для хранения битов регистров
 		public var registersText:String; // Строка для вывода всех регистров на экран
@@ -46,8 +48,8 @@ package
 		{
 			if (mode == MAINMODE)
 			{
-				trace(123);
 				mode = RUNNING;
+				programRunner = new ProgramRunner(programText.txt.text);				
 				graphicsUpdate();
 			}
 		}
@@ -74,10 +76,9 @@ package
 			while (this.numChildren) // удаляет все с поля
 			{
 				this.removeChildAt(0);
-				trace(mode);
 			}
 			new ColoredRectangle(15, 75, 400, 500, 0xffffff, this);
-			new ColoredText(16, 15, 75, 400, 500, "", 0x000000, this, true, true);
+			programText = new ColoredText(16, 15, 75, 400, 500, "", 0x000000, this, true, true);
 			new ColoredRectangle(440, 0, 5, 600, 0x000000, this);
 			new ColoredRectangle(1040, 0, 5, 400, 0x000000, this);
 			new ColoredRectangle(440, 400, 1280 - 440, 5, 0x000000, this);

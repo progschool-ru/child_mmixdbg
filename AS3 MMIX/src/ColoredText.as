@@ -17,6 +17,7 @@ package
 				if (isEditBox)
 				{
 					txt.type = TextFieldType.INPUT;
+					txt.multiline = true;
 					txt.border = true;
 				}
 				else if(isMouseAllowed)

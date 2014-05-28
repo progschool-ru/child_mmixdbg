@@ -10,7 +10,8 @@ package
 		public const MAINMODE:String = "Main Mode";
 		public const RUNNING:String = "Running";
 		
-		public var programText:ColoredText; // переменная для получения введенного пользователем текста программы
+		public var programColoredText:ColoredText; // переменная для получения введенного пользователем текста программы
+		public var programText:String = ""; // содержит введенный пользователем текст программы
 		public var programRunner:ProgramRunner; // отвечает за исполнение программы, введенной пользователем
 		public var mode:String = MAINMODE; // режим отвечающий за то что происходит с MMIX-программой (компилируется, дебажится или пишется)
 		public var registers:Array = []; // Массив для хранения битов регистров
@@ -19,6 +20,7 @@ package
 		public var memory:Array = []; // Массив для хранения битов памяти
 		public var memoryText:String; // Строка для вывода содержимого памяти на экран
 		public var runButton:Sprite = new Sprite; // Кнопка для запуска программы
+		
 		public function MMIXCompiler() 
 		{
 			//addEventListener(Event.ENTER_FRAME, onFrame);
@@ -49,7 +51,8 @@ package
 			if (mode == MAINMODE)
 			{
 				mode = RUNNING;
-				programRunner = new ProgramRunner(programText.txt.text);				
+				programText = programColoredText.txt.text;
+				programRunner = new ProgramRunner(programText);				
 				graphicsUpdate();
 			}
 		}
@@ -78,7 +81,7 @@ package
 				this.removeChildAt(0);
 			}
 			new ColoredRectangle(15, 75, 400, 500, 0xffffff, this);
-			programText = new ColoredText(16, 15, 75, 400, 500, "", 0x000000, this, true, true);
+			programColoredText = new ColoredText(16, 15, 75, 400, 500, programText, 0x000000, this, true, true);
 			new ColoredRectangle(440, 0, 5, 600, 0x000000, this);
 			new ColoredRectangle(1040, 0, 5, 400, 0x000000, this);
 			new ColoredRectangle(440, 400, 1280 - 440, 5, 0x000000, this);

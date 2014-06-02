@@ -20,7 +20,7 @@ package
 		{
 			removeEventListener(Event.ADDED_TO_STAGE, init);
 			// entry point
-			var mmixCompiler:MMIXCompiler = new MMIXCompiler();
+			var mmixCompiler:GraphicsUpdater = new GraphicsUpdater();
 			addChild(mmixCompiler);
 		}
 		

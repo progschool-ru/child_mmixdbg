@@ -5,44 +5,25 @@ package
 	import flash.events.MouseEvent;
 	import flash.events.KeyboardEvent;
 	 
-	public class MMIXCompiler extends Sprite
+	public class GraphicsUpdater extends Sprite
 	{
 		public const MAINMODE:String = "Main Mode";
 		public const RUNNING:String = "Running";
 		
 		public var programColoredText:ColoredText; // переменная для получения введенного пользователем текста программы
 		public var programText:String = ""; // содержит введенный пользователем текст программы
+		public var programParser:ProgramParser; //отвечает за парсинг программы, введенной пользователем 
 		public var programRunner:ProgramRunner; // отвечает за исполнение программы, введенной пользователем
 		public var mode:String = MAINMODE; // режим отвечающий за то что происходит с MMIX-программой (компилируется, дебажится или пишется)
-		public var registers:Array = []; // Массив для хранения битов регистров
 		public var registersText:String; // Строка для вывода всех регистров на экран
 		public var memoryLimit:int = 64; // Количество октабайт, отображаемых на экране
-		public var memory:Array = []; // Массив для хранения битов памяти
 		public var memoryText:String; // Строка для вывода содержимого памяти на экран
 		public var runButton:Sprite = new Sprite; // Кнопка для запуска программы
 		
-		public function MMIXCompiler() 
+		public function GraphicsUpdater() 
 		{
-			//addEventListener(Event.ENTER_FRAME, onFrame);
-			var i:int = 0;
-			var j:int = 0;
-			//забиваем память и регистры нулями
-			for (i = 0; i < 8 * memoryLimit; i++)
-			{
-				memory[i] = [];
-				for (j = 0; j < 8; j++)
-				{
-					memory[i][j] = 0;
-				}
-			}
-			for (i = 0; i < 256; i++) 
-			{
-				registers[i] = [];
-				for (j = 0; j < 64; j++)
-				{
-					registers[i][j] = 0;
-				}
-			}
+			programParser = new ProgramParser(programText);				
+			programRunner = new ProgramRunner(programParser.labelArr, programParser.opArr, programParser.exprArr, memoryLimit);
 			graphicsUpdate();
 		}
 		
@@ -52,7 +33,8 @@ package
 			{
 				mode = RUNNING;
 				programText = programColoredText.txt.text;
-				programRunner = new ProgramRunner(programText);				
+				programParser = new ProgramParser(programText);				
+				programRunner = new ProgramRunner(programParser.labelArr, programParser.opArr, programParser.exprArr, memoryLimit);
 				graphicsUpdate();
 			}
 		}
@@ -106,7 +88,7 @@ package
 				registersText += "#";
 				for (j = 0 ; j < 16; j++)
 				{
-					registersText += transformNumberSystem(registers[i][4 * j], registers[i][4 * j + 1], registers[i][4 * j + 2], registers[i][4 * j + 3]);
+					registersText += transformNumberSystem(programRunner.registers[i][4 * j], programRunner.registers[i][4 * j + 1], programRunner.registers[i][4 * j + 2], programRunner.registers[i][4 * j + 3]);
 				}
 				registersText += '\n';
 			}
@@ -123,7 +105,7 @@ package
 				}
 				for (j = 0 ; j < 16; j++)
 				{
-					memoryText += transformNumberSystem(memory[i][4 * j], memory[i][4 * j + 1],	memory[i][4 * j + 2], memory[i][4 * j + 3]);
+					memoryText += transformNumberSystem(programRunner.memory[i][4 * j], programRunner.memory[i][4 * j + 1],	programRunner.memory[i][4 * j + 2], programRunner.memory[i][4 * j + 3]);
 					if (j % 2 == 1) memoryText += " ";
 				}
 				if (i % 2 == 1)

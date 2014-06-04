@@ -19,6 +19,7 @@ package
 		public var memoryLimit:int = 64; // Количество октабайт, отображаемых на экране
 		public var memoryText:String; // Строка для вывода содержимого памяти на экран
 		public var runButton:Sprite = new Sprite; // Кнопка для запуска программы
+		public var errorText:String = ""; // содержит информацию об ошибках 
 		
 		public function GraphicsUpdater() 
 		{
@@ -33,8 +34,10 @@ package
 			{
 				mode = RUNNING;
 				programText = programColoredText.txt.text;
-				programParser = new ProgramParser(programText);				
-				programRunner = new ProgramRunner(programParser.labelArr, programParser.opArr, programParser.exprArr, memoryLimit);
+				programParser = new ProgramParser(programText);
+				errorText = programParser.getErrorText(programParser.errorNumber);
+				if(programParser.errorNumber == 0)
+					programRunner = new ProgramRunner(programParser.labelArr, programParser.opArr, programParser.exprArr, memoryLimit);
 				graphicsUpdate();
 			}
 		}
@@ -115,8 +118,7 @@ package
 			}
 			new ColoredText(14, 610, 10, 410, 20, "00 01 02 03 04 05 06 07    08 09 0a 0b 0c 0d 0e 0f", 0x888888, this, false, true);
 			new ColoredText(14, 450, 35, 570, 370, memoryText, 0x000000, this, false, true);
-			//Этого блока потом быть не должно 
-			new ColoredText(40, 515, 415, 400, 500, "Тут будут сообщения об ошибках", 0x000000, this, false, true);
+			new ColoredText(18, 450, 415, 400, 500, errorText, 0x000000, this, false, true);
 		}
 		
 		public function decimalToHex(number:int, lenght:int) : String

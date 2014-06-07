@@ -37,7 +37,10 @@ package
 				programParser = new ProgramParser(programText);
 				errorText = programParser.getErrorText(programParser.errorNumber);
 				if(programParser.errorNumber == 0)
-					programRunner = new ProgramRunner(programParser.labelArr, programParser.opArr, programParser.exprArr, memoryLimit);
+					{
+						programRunner = new ProgramRunner(programParser.labelArr, programParser.opArr, programParser.exprArr, memoryLimit);
+						errorText = programRunner.getErrorText(programRunner.errorNumber);
+					}
 				graphicsUpdate();
 			}
 		}

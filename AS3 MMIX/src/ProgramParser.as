@@ -136,7 +136,7 @@ package
 		
 		public function getErrorText(n:int):String //возвращает текст ошибки по ее номеру
 		{
-			if (n == 0) return "Done";
+			if (n == 0) return "OK";
 			if (n == 1) return "Wrong op-code at line " + (lineNumber + 1);
 			if (n == 2) return "Unexpected ',' at line " + (lineNumber + 1);
 			return "Unknown error";

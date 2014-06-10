@@ -8,6 +8,7 @@ package
 		public var lineNumber:int = 0; // номер исполняемой строки
 		public var lastReg:int = 255; // номер наименьшего глобального регистра
 		public var errorNumber:int = 0;
+		public var varMatcher:VarMatcher = new VarMatcher();
 		
 		public function ProgramRunner(labelArr:Array,  opArr:Array,  exprArr:Array, memoryLimit:int) 
 		{
@@ -50,21 +51,34 @@ package
 						{
 							if ((exprArr[i][0].charAt(j) < '0' || exprArr[i][0].charAt(j) > '9') && (exprArr[i][0].charAt(j) < 'a' || exprArr[i][0].charAt(j) > 'f'))
 								errorNumber = 4;
-							else trace(exprArr[i][0].charAt(j));
 						}
-						if (errorNumber == 0) errorNumber = WriteHexToReg(Number(exprArr[i][0]).toString(16), lastReg);
+						if (errorNumber == 0) errorNumber = writeHexToReg(Number(exprArr[i][0]).toString(16), lastReg);
 					}
 					else
 					{
-						errorNumber = WriteHexToReg(exprArr[i][0].substring(1, dummyLenght), lastReg);
+						errorNumber = writeHexToReg(exprArr[i][0].substring(1, dummyLenght), lastReg);
 					}
+					if (labelArr[i] != "") 
+						varMatcher.addReg(labelArr[i], lastReg);
 					if (errorNumber != 0)
 						break;
 				}
+				else if (opArr[i] == "IS")
+				{
+					if (exprArr[i][1] != "" || exprArr[i][0] == "") 
+					{
+						errorNumber = 3; 
+						break;
+					}
+					if (labelArr[i] != "") 
+						varMatcher.addVal(labelArr[i], exprArr[i][0]);
+				}
 			}
+		//	var ar:Array = varMatcher.findVar("a");
+		//	trace(ar[ar[0]]);
 		}
 		
-		public function WriteHexToReg(number:String, reg:int):int
+		public function writeHexToReg(number:String, reg:int):int
 		//записывает шестнадцаричное число в указанный регистр, возвращает номер ошибки
 		{
 			var l:int = number.length;

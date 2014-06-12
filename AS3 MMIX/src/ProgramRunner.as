@@ -15,6 +15,8 @@ package
 			var l: int = labelArr.length;
 			var i:int = 0;
 			var j:int = 0;
+			var dummyArr:Array = [];
+			var dummyLength:int;
 			//забиваем память и регистры нулями
 			for (i = 0; i < 8 * memoryLimit; i++)
 			{
@@ -44,24 +46,23 @@ package
 						break;
 					}
 					lastReg--; 
-					var dummyLenght:int = exprArr[i][0].length;
+					dummyLength = exprArr[i][0].length;
 					if (exprArr[i][0].charAt(0) != "#") 
 					{
-						for (j = 0; j < dummyLenght; j++)
+						for (j = 0; j < dummyLength; j++)
 						{
 							if ((exprArr[i][0].charAt(j) < '0' || exprArr[i][0].charAt(j) > '9') && (exprArr[i][0].charAt(j) < 'a' || exprArr[i][0].charAt(j) > 'f'))
 								errorNumber = 4;
 						}
-						if (errorNumber == 0) errorNumber = writeHexToReg(Number(exprArr[i][0]).toString(16), lastReg);
+						if (errorNumber == 0) 
+							errorNumber = writeHexToReg(Number(exprArr[i][0]).toString(16), lastReg);
 					}
 					else
 					{
-						errorNumber = writeHexToReg(exprArr[i][0].substring(1, dummyLenght), lastReg);
+						errorNumber = writeHexToReg(exprArr[i][0].substring(1, dummyLength), lastReg);
 					}
 					if (labelArr[i] != "") 
 						varMatcher.addReg(labelArr[i], lastReg);
-					if (errorNumber != 0)
-						break;
 				}
 				else if (opArr[i] == "IS")
 				{
@@ -73,9 +74,61 @@ package
 					if (labelArr[i] != "") 
 						varMatcher.addVal(labelArr[i], exprArr[i][0]);
 				}
+				else if (opArr[i] == "ADD")
+				{
+					if (exprArr[i][2] == "" || exprArr[i][1] == "" || exprArr[i][0] == "") 
+					{
+						errorNumber = 3; 
+						break;
+					}
+					dummyArr = matchVars(exprArr[i], 3);
+					if (errorNumber == 0)
+					{
+						for (j = 0; j < 3; j++)
+						{
+							dummyLength = dummyArr[j].length;
+							dummyArr[j] = (int)(dummyArr[j].substring(1, dummyLength));
+						}
+						registers[dummyArr[0]] = add(registers[dummyArr[1]], registers[dummyArr[2]]);
+					}
+				}
+				if (errorNumber != 0)
+					break;
 			}
 		//	var ar:Array = varMatcher.findVar("a");
 		//	trace(ar[ar[0]]);
+		}
+		
+		public function matchVars(vars:Array, n:int):Array
+		// принимает массив из n переменных/регистров, возвращает массив соответствующих регистров
+		{
+			var res:Array = vars;
+			for (var i:int = 0; i < n; i++)
+			{
+				if (vars[i].charAt(0) != "$") 
+				{
+					var dummy:Array = varMatcher.findVar(vars[i]);
+					if (dummy[1] == -1)
+					{
+						errorNumber = 4; 
+						// нужно перепроверить верно ли выдавать ошибку
+					}
+					else
+						res[i] = "$" + dummy[1];
+				}
+				else
+				{
+					var l:int = vars[i].length;
+					if (l == 1) 
+						errorNumber = 4;
+					for (var j:int = 1; j < l; j++)
+					{
+						if (vars[i].charAt(j) < '0' || vars[i].charAt(j)  > '9') 
+							errorNumber = 4;
+					}
+				}
+			}
+			return res;
 		}
 		
 		public function writeHexToReg(number:String, reg:int):int
@@ -121,9 +174,25 @@ package
 			if (n == 0) return "Done";
 			if (n == 3) return "Wrong number of arguments at line " + (lineNumber + 1);
 			if (n == 4) return "Wrong type of argument at line " + (lineNumber + 1);
-			if (n == 5) return "Too big number at line " + (lineNumber + 1);
+			if (n == 5) return "Overflow error at line " + (lineNumber + 1);
 			
-			return "Unknown error";
+			return "Unknown error at line " + (lineNumber + 1);
+		}
+		
+		
+		
+		public function add(Y:Array, Z:Array):Array
+		{
+			var X:Array = []; // результат
+			var columnAdditionHelper:int = 0; 
+			for (var i:int = 63; i >= 0; i--)
+			{
+				X[i] = (Y[i] + Z[i] + columnAdditionHelper) % 2;
+				columnAdditionHelper = (Y[i] + Z[i] + columnAdditionHelper) / 2;
+			}
+			if (columnAdditionHelper == 1) 
+				errorNumber = 5;
+			return X;
 		}
 		
 	}

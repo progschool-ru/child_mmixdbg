@@ -38,7 +38,7 @@ package
 						return [2, registers[i], values[i]];
 				}
 			}
-			return [-1,"",-1];
+			return [-1,-1, ""];
 		}
 	}
 

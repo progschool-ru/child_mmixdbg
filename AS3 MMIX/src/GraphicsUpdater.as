@@ -121,7 +121,7 @@ package
 			}
 			new ColoredText(14, 610, 10, 410, 20, "00 01 02 03 04 05 06 07    08 09 0a 0b 0c 0d 0e 0f", 0x888888, this, false, true);
 			new ColoredText(14, 450, 35, 570, 370, memoryText, 0x000000, this, false, true);
-			new ColoredText(18, 450, 415, 400, 500, errorText, 0x000000, this, false, true);
+			new ColoredText(18, 450, 415, 800, 500, errorText, 0x000000, this, false, true);
 		}
 		
 		public function decimalToHex(number:int, lenght:int) : String

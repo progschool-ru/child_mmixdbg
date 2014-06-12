@@ -49,17 +49,11 @@ package
 					dummyLength = exprArr[i][0].length;
 					if (exprArr[i][0].charAt(0) != "#") 
 					{
-						for (j = 0; j < dummyLength; j++)
-						{
-							if ((exprArr[i][0].charAt(j) < '0' || exprArr[i][0].charAt(j) > '9') && (exprArr[i][0].charAt(j) < 'a' || exprArr[i][0].charAt(j) > 'f'))
-								errorNumber = 4;
-						}
-						if (errorNumber == 0) 
-							errorNumber = writeHexToReg(Number(exprArr[i][0]).toString(16), lastReg);
+						registers[lastReg] = decimalToBin(exprArr[i][0]);
 					}
 					else
 					{
-						errorNumber = writeHexToReg(exprArr[i][0].substring(1, dummyLength), lastReg);
+						registers[lastReg] = hexToBin(exprArr[i][0].substring(1, dummyLength));
 					}
 					if (labelArr[i] != "") 
 						varMatcher.addReg(labelArr[i], lastReg);
@@ -84,12 +78,24 @@ package
 					dummyArr = matchVars(exprArr[i], 3);
 					if (errorNumber == 0)
 					{
-						for (j = 0; j < 3; j++)
+						if (!checkForReg(dummyArr[0]))
+							errorNumber = 4;
+						else
+						{
+							dummyLength = dummyArr[0].length;
+							dummyArr[0] = (int)(dummyArr[0].substring(1, dummyLength));
+						}
+						for (j = 1; j < 3; j++)
 						{
 							dummyLength = dummyArr[j].length;
-							dummyArr[j] = (int)(dummyArr[j].substring(1, dummyLength));
+							if(checkForReg(dummyArr[j]))
+								dummyArr[j] = registers[(int)(dummyArr[j].substring(1, dummyLength))];
+							else if (checkForHex(dummyArr[j]))
+								dummyArr[j] = hexToBin(dummyArr[j].substring(1, dummyLength));
+							else 
+								dummyArr[j] = decimalToBin(dummyArr[j]);
 						}
-						registers[dummyArr[0]] = add(registers[dummyArr[1]], registers[dummyArr[2]]);
+						registers[dummyArr[0]] = add(dummyArr[1], dummyArr[2]);
 					}
 				}
 				if (errorNumber != 0)
@@ -105,47 +111,47 @@ package
 			var res:Array = vars;
 			for (var i:int = 0; i < n; i++)
 			{
-				if (vars[i].charAt(0) != "$") 
+				if ((vars[i].charAt(0) < '0' || vars[i].charAt(0) > '9') && vars[i].charAt(0) != '$' && vars[i].charAt(0) != '#') 
 				{
 					var dummy:Array = varMatcher.findVar(vars[i]);
-					if (dummy[1] == -1)
-					{
+					if (dummy[0] == -1)
 						errorNumber = 4; 
-						// нужно перепроверить верно ли выдавать ошибку
-					}
 					else
-						res[i] = "$" + dummy[1];
-				}
-				else
-				{
-					var l:int = vars[i].length;
-					if (l == 1) 
-						errorNumber = 4;
-					for (var j:int = 1; j < l; j++)
 					{
-						if (vars[i].charAt(j) < '0' || vars[i].charAt(j)  > '9') 
-							errorNumber = 4;
+						res[i] = dummy[dummy[0]]
+						if(dummy[0] == 1)
+							res[i] = "$" + dummy[1];
 					}
+				}
+				if (!(checkForDecimal(vars[i]) || checkForHex(vars[i]) || checkForReg(vars[i])))
+				{
+					errorNumber = 4;
+					return res;
 				}
 			}
 			return res;
 		}
 		
-		public function writeHexToReg(number:String, reg:int):int
-		//записывает шестнадцаричное число в указанный регистр, возвращает номер ошибки
+		public function hexToBin(number:String):Array
+		//Переводит 16ричное число в двоичное, представленное массивом длины 64.
 		{
+			var res:Array = [];
 			var l:int = number.length;
 			var i:int = 0;
-			if (l > 16) return 5;
+			if (l > 16) 
+			{
+				errorNumber = 5;
+				return res;
+			}
 			while (l < 16)
 			{
 				l++;
 				number = "0" + number;
 			}
-			for (i = 0; i < 16; i++)
+			if (!checkForHex("#" + number))
 			{
-				if ((number.charAt(i) < '0' || number.charAt(i) > '9') && (number.charAt(i) < 'a' || number.charAt(i) > 'f'))
-					return 4;
+				errorNumber = 4;
+				return res;
 			}
 			for (i = 0; i < 16; i++)
 			{
@@ -157,17 +163,31 @@ package
 				else if (number.charAt(i) == 'b') decimal = 11; 
 				else if (number.charAt(i) == 'a') decimal = 10; 
 				else decimal = int(number.charAt(i));
-				registers[reg][i * 4] = 0;
-				registers[reg][i * 4 + 1] = 0;
-				registers[reg][i * 4 + 2] = 0;
-				registers[reg][i * 4 + 3] = 0;
-				if (decimal % 2 >= 1) registers[reg][i * 4 + 3] = 1;
-				if (decimal % 4 >= 2) registers[reg][i * 4 + 2] = 1;
-				if (decimal % 8 >= 4) registers[reg][i * 4 + 1] = 1;
-				if (decimal % 16 >= 8) registers[reg][i * 4] = 1;
+				res[i * 4] = 0;
+				res[i * 4 + 1] = 0;
+				res[i * 4 + 2] = 0;
+				res[i * 4 + 3] = 0;
+				if (decimal % 2 >= 1) res[i * 4 + 3] = 1;
+				if (decimal % 4 >= 2) res[i * 4 + 2] = 1;
+				if (decimal % 8 >= 4) res[i * 4 + 1] = 1;
+				if (decimal % 16 >= 8) res[i * 4] = 1;
 			}
-			return 0;
+			return res;
 		}
+		
+		public function decimalToBin(number:String) : Array
+		//преобразовывает 10-чное число в двоичное, представленное массивом длины 64.
+		{
+			var res:Array = [];
+			if(!checkForDecimal(number))
+			{
+				errorNumber = 4;
+				return res;
+			}
+			res = hexToBin(Number(number).toString(16));
+			return res;
+		}
+		
 		
 		public function getErrorText(n:int):String //возвращает текст ошибки по ее номеру
 		{
@@ -179,7 +199,59 @@ package
 			return "Unknown error at line " + (lineNumber + 1);
 		}
 		
+		public function checkForReg(number:String):Boolean
+		//Проверяет является ли строка символов номером регистра
+		{
+			var l:int = number.length;
+			if (l < 2) 
+				return false;
+			if (number.charAt(0) != '$')
+				return false
+			for (var i:int = 1; i < l; i++)
+			{
+				if (number.charAt(i) < '0' || number.charAt(i) > '9')
+				{
+					return false;
+				}
+			}
+			var dummyNum:int = int(number.substring(1, l));
+			if (dummyNum < 0 || dummyNum > 255)
+				return false;
+			return true;
+		}
+		public function checkForHex(number:String):Boolean
+		//Проверяет является ли строка символов 16-чным числом
+		{
+			var l:int = number.length;
+			if (l < 2) 
+				return false;
+			if (number.charAt(0) != '#')
+				return false
+			for (var i:int = 1; i < l; i++)
+			{
+				if ((number.charAt(i) < '0' || number.charAt(i) > '9') && (number.charAt(i) < 'a' || number.charAt(i) > 'f'))
+				{
+					return false;
+				}
+			}
+			return true;
+		}
 		
+		public function checkForDecimal(number:String):Boolean
+		//Проверяет является ли строка символов 10-чным числом
+		{
+			var l:int = number.length;
+			if (l < 1)
+				return false;
+			for (var i:int = 0; i < l; i++)
+			{
+				if (number.charAt(i) < '0' || number.charAt(i) > '9')
+				{
+					return false;
+				}
+			}
+			return true;
+		}
 		
 		public function add(Y:Array, Z:Array):Array
 		{

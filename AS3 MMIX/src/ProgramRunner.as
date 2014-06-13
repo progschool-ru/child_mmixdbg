@@ -96,11 +96,7 @@ package
 					dummyArr = prepareExpr(exprArr[i], 3);
 					if (errorNumber == 0)
 					{
-						isConditionPerformed = true;
-						for (j = 0; j < 63; j++)
-							if (dummyArr[1][j] != 1)
-								isConditionPerformed = false;
-						if (dummyArr[1][63] == 1 && isConditionPerformed)
+						if (dummyArr[1][0] == 1)
 							registers[dummyArr[0]] = dummyArr[2];
 					}	
 				}
@@ -110,23 +106,23 @@ package
 					if (errorNumber == 0)
 					{
 						isConditionPerformed = true;
-						for (j = 0; j < 63; j++)
+						for (j = 0; j < 64; j++)
 							if (dummyArr[1][j] != 0)
 								isConditionPerformed = false;
-						if (dummyArr[1][63] == 0 && isConditionPerformed)
+						if (isConditionPerformed)
 							registers[dummyArr[0]] = dummyArr[2];
-					}	
+					}		
 				}
 				else if (opArr[i] == "CSP")
 				{
 					dummyArr = prepareExpr(exprArr[i], 3);
 					if (errorNumber == 0)
 					{
-						isConditionPerformed = true;
-						for (j = 0; j < 63; j++)
+						isConditionPerformed = false;
+						for (j = 1; j < 64; j++)
 							if (dummyArr[1][j] != 0)
-								isConditionPerformed = false;
-						if (dummyArr[1][63] == 1 && isConditionPerformed)
+								isConditionPerformed = true;
+						if (dummyArr[1][0] == 0 && isConditionPerformed)
 							registers[dummyArr[0]] = dummyArr[2];
 					}	
 				}

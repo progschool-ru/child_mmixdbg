@@ -68,7 +68,7 @@ package
 					if (labelArr[i] != "") 
 						varMatcher.addVal(labelArr[i], exprArr[i][0]);
 				}
-				else if (opArr[i] == "ADD")
+				else if (opArr[i] == "ADD" || opArr[i] == "ADDU")
 				{
 					if (exprArr[i][2] == "" || exprArr[i][1] == "" || exprArr[i][0] == "") 
 					{
@@ -95,7 +95,10 @@ package
 							else 
 								dummyArr[j] = decimalToBin(dummyArr[j]);
 						}
-						registers[dummyArr[0]] = add(dummyArr[1], dummyArr[2]);
+						if(opArr[i] == "ADD")
+							registers[dummyArr[0]] = add(dummyArr[1], dummyArr[2], false);
+						else if (opArr[i] == "ADDU")
+							registers[dummyArr[0]] = add(dummyArr[1], dummyArr[2], true);
 					}
 				}
 				if (errorNumber != 0)
@@ -253,7 +256,22 @@ package
 			return true;
 		}
 		
-		public function add(Y:Array, Z:Array):Array
+	/*	public function compare(Y:Array, Z:Array):Array
+		{
+			X:Array = []; //результат
+			var i:int = 0;
+			var j:int = 0;
+			for (i = 0; i < 64; i++)
+			{
+				if (Y[i] > Z[i])
+				{
+					for (j = 0; j < 64; j++)
+						X[j] = ;
+				}
+			}
+		}*/
+		
+		public function add(Y:Array, Z:Array, unsigned:Boolean):Array
 		{
 			var X:Array = []; // результат
 			var columnAdditionHelper:int = 0; 
@@ -262,9 +280,41 @@ package
 				X[i] = (Y[i] + Z[i] + columnAdditionHelper) % 2;
 				columnAdditionHelper = (Y[i] + Z[i] + columnAdditionHelper) / 2;
 			}
-			if (columnAdditionHelper == 1) 
+			if (!unsigned && Y[0] == Z[0] && X[0] != Y[0]) 
 				errorNumber = 5;
 			return X;
+		}
+		
+		public function substract(Y:Array, Z:Array, unsigned:Boolean):Array
+		{
+			var X:Array = []; // результат
+			var columnSubstractionHelper:int = 0; 
+			for (var i:int = 63; i >= 0; i--)
+			{
+				X[i] = Y[i] - Z[i] - columnSubstractionHelper;
+				columnSubstractionHelper = 0;
+				if (X[i] < 0)
+				{
+					X[i] += 2;
+					columnSubstractionHelper = 1;
+				}
+			}
+			if (!unsigned && Y[0] == 1 && X[0] == 0) 
+				errorNumber = 5;
+			return X;
+		}
+		
+		public function changeSign(X:Array):Array
+		{
+			var dummyArr:Array = [];
+			var dummyArr2:Array = [];
+			for (var i:int = 0 ; i < 64; i++)
+			{
+				dummyArr[i] = 1;
+				dummyArr2[i] = 0;
+			}
+			dummyArr2[63] = 1;
+			return add(substract(dummyArr, X, true), dummyArr2, true);
 		}
 		
 	}

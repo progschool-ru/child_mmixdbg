@@ -17,6 +17,7 @@ package
 			var j:int = 0;
 			var dummyArr:Array = [];
 			var dummyLength:int;
+			var isConditionPerformed:Boolean;
 			//забиваем память и регистры нулями
 			for (i = 0; i < 8 * memoryLimit; i++)
 			{
@@ -70,31 +71,9 @@ package
 				}
 				else if (opArr[i] == "ADD" || opArr[i] == "ADDU")
 				{
-					if (exprArr[i][2] == "" || exprArr[i][1] == "" || exprArr[i][0] == "") 
-					{
-						errorNumber = 3; 
-						break;
-					}
-					dummyArr = matchVars(exprArr[i], 3);
+					dummyArr = prepareExpr(exprArr[i], 3);
 					if (errorNumber == 0)
 					{
-						if (!checkForReg(dummyArr[0]))
-							errorNumber = 4;
-						else
-						{
-							dummyLength = dummyArr[0].length;
-							dummyArr[0] = (int)(dummyArr[0].substring(1, dummyLength));
-						}
-						for (j = 1; j < 3; j++)
-						{
-							dummyLength = dummyArr[j].length;
-							if(checkForReg(dummyArr[j]))
-								dummyArr[j] = registers[(int)(dummyArr[j].substring(1, dummyLength))];
-							else if (checkForHex(dummyArr[j]))
-								dummyArr[j] = hexToBin(dummyArr[j].substring(1, dummyLength));
-							else 
-								dummyArr[j] = decimalToBin(dummyArr[j]);
-						}
 						if(opArr[i] == "ADD")
 							registers[dummyArr[0]] = add(dummyArr[1], dummyArr[2], false);
 						else if (opArr[i] == "ADDU")
@@ -103,46 +82,102 @@ package
 				}
 				else if (opArr[i] == "CMP" || opArr[i] == "CMPU")
 				{
-					if (exprArr[i][2] == "" || exprArr[i][1] == "" || exprArr[i][0] == "") 
-					{
-						errorNumber = 3; 
-						break;
-					}
-					dummyArr = matchVars(exprArr[i], 3);
+					dummyArr = prepareExpr(exprArr[i], 3);
 					if (errorNumber == 0)
 					{
-						if (!checkForReg(dummyArr[0]))
-							errorNumber = 4;
-						else
-						{
-							dummyLength = dummyArr[0].length;
-							dummyArr[0] = (int)(dummyArr[0].substring(1, dummyLength));
-						}
-						for (j = 1; j < 3; j++)
-						{
-							dummyLength = dummyArr[j].length;
-							if(checkForReg(dummyArr[j]))
-								dummyArr[j] = registers[(int)(dummyArr[j].substring(1, dummyLength))];
-							else if (checkForHex(dummyArr[j]))
-								dummyArr[j] = hexToBin(dummyArr[j].substring(1, dummyLength));
-							else 
-								dummyArr[j] = decimalToBin(dummyArr[j]);
-						}
 						if(opArr[i] == "CMP")
 							registers[dummyArr[0]] = compare(dummyArr[1], dummyArr[2], false);
 						else if (opArr[i] == "CMPU")
 							registers[dummyArr[0]] = compare(dummyArr[1], dummyArr[2], true);
 					}
 				}
+				else if (opArr[i] == "CSN")
+				{
+					dummyArr = prepareExpr(exprArr[i], 3);
+					if (errorNumber == 0)
+					{
+						isConditionPerformed = true;
+						for (j = 0; j < 63; j++)
+							if (dummyArr[1][j] != 1)
+								isConditionPerformed = false;
+						if (dummyArr[1][63] == 1 && isConditionPerformed)
+							registers[dummyArr[0]] = dummyArr[2];
+					}	
+				}
+				else if (opArr[i] == "CSZ")
+				{
+					dummyArr = prepareExpr(exprArr[i], 3);
+					if (errorNumber == 0)
+					{
+						isConditionPerformed = true;
+						for (j = 0; j < 63; j++)
+							if (dummyArr[1][j] != 0)
+								isConditionPerformed = false;
+						if (dummyArr[1][63] == 0 && isConditionPerformed)
+							registers[dummyArr[0]] = dummyArr[2];
+					}	
+				}
+				else if (opArr[i] == "CSP")
+				{
+					dummyArr = prepareExpr(exprArr[i], 3);
+					if (errorNumber == 0)
+					{
+						isConditionPerformed = true;
+						for (j = 0; j < 63; j++)
+							if (dummyArr[1][j] != 0)
+								isConditionPerformed = false;
+						if (dummyArr[1][63] == 1 && isConditionPerformed)
+							registers[dummyArr[0]] = dummyArr[2];
+					}	
+				}
 				if (errorNumber != 0)
 					break;
 			}
-		//	var ar:Array = varMatcher.findVar("a");
-		//	trace(ar[ar[0]]);
+		}
+		
+		public function prepareExpr(vars:Array, n:int):Array
+		//совершает общие для большинства команд действия с переданным массивом аргументов. 
+		{
+			var res:Array = [];
+			var j:int = 0;
+			for (j = 0; j < n; j++)
+				if (vars[j] == "")
+				{
+					errorNumber = 3; 
+					break;
+				}
+			for (j = n; j < 3; j++)
+				if (vars[j] != "")
+				{
+					errorNumber = 3; 
+					break;
+				}
+			res = matchVars(vars, n);
+			if (errorNumber == 0)
+			{
+				if (!checkForReg(res[0]))
+					errorNumber = 4;
+				else
+				{
+					var l:int = res[0].length;
+					res[0] = (int)(res[0].substring(1, l));
+				}
+				for (j = 1; j < n; j++)
+				{
+					l = res[j].length;
+					if(checkForReg(res[j]))
+						res[j] = registers[(int)(res[j].substring(1, l))];
+					else if (checkForHex(res[j]))
+						res[j] = hexToBin(res[j].substring(1, l));
+					else 
+						res[j] = decimalToBin(res[j]);
+				}
+			}
+			return res;
 		}
 		
 		public function matchVars(vars:Array, n:int):Array
-		// принимает массив из n переменных/регистров, возвращает массив соответствующих регистров
+		// принимает массив из n переменных/регистров, возвращает массив соответствующих регистров и значений
 		{
 			var res:Array = vars;
 			for (var i:int = 0; i < n; i++)

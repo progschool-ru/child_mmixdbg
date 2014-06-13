@@ -44,8 +44,8 @@ package
 						programRunner = new ProgramRunner(programParser.labelArr, programParser.opArr, programParser.exprArr, memoryLimit);
 						errorText = programRunner.getErrorText(programRunner.errorNumber);
 					}
-					mode = MAINMODE;
-					graphicsUpdate();
+				mode = MAINMODE;
+				graphicsUpdate();
 			}
 		}
 		

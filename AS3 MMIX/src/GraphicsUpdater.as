@@ -34,6 +34,9 @@ package
 			{
 				mode = RUNNING;
 				programText = programColoredText.txt.text;
+				programParser = new ProgramParser("");				
+				programRunner = new ProgramRunner(programParser.labelArr, programParser.opArr, programParser.exprArr, memoryLimit);
+				graphicsUpdate();
 				programParser = new ProgramParser(programText);
 				errorText = programParser.getErrorText(programParser.errorNumber);
 				if(programParser.errorNumber == 0)
@@ -41,7 +44,8 @@ package
 						programRunner = new ProgramRunner(programParser.labelArr, programParser.opArr, programParser.exprArr, memoryLimit);
 						errorText = programRunner.getErrorText(programRunner.errorNumber);
 					}
-				graphicsUpdate();
+					mode = MAINMODE;
+					graphicsUpdate();
 			}
 		}
 		

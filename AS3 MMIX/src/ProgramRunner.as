@@ -101,6 +101,39 @@ package
 							registers[dummyArr[0]] = add(dummyArr[1], dummyArr[2], true);
 					}
 				}
+				else if (opArr[i] == "CMP" || opArr[i] == "CMPU")
+				{
+					if (exprArr[i][2] == "" || exprArr[i][1] == "" || exprArr[i][0] == "") 
+					{
+						errorNumber = 3; 
+						break;
+					}
+					dummyArr = matchVars(exprArr[i], 3);
+					if (errorNumber == 0)
+					{
+						if (!checkForReg(dummyArr[0]))
+							errorNumber = 4;
+						else
+						{
+							dummyLength = dummyArr[0].length;
+							dummyArr[0] = (int)(dummyArr[0].substring(1, dummyLength));
+						}
+						for (j = 1; j < 3; j++)
+						{
+							dummyLength = dummyArr[j].length;
+							if(checkForReg(dummyArr[j]))
+								dummyArr[j] = registers[(int)(dummyArr[j].substring(1, dummyLength))];
+							else if (checkForHex(dummyArr[j]))
+								dummyArr[j] = hexToBin(dummyArr[j].substring(1, dummyLength));
+							else 
+								dummyArr[j] = decimalToBin(dummyArr[j]);
+						}
+						if(opArr[i] == "CMP")
+							registers[dummyArr[0]] = compare(dummyArr[1], dummyArr[2], false);
+						else if (opArr[i] == "CMPU")
+							registers[dummyArr[0]] = compare(dummyArr[1], dummyArr[2], true);
+					}
+				}
 				if (errorNumber != 0)
 					break;
 			}
@@ -187,7 +220,13 @@ package
 				errorNumber = 4;
 				return res;
 			}
-			res = hexToBin(Number(number).toString(16));
+			var l:int = number.length;
+			if (number.charAt(0) == "+")
+				res = hexToBin(Number(number.substring(1,l)).toString(16));
+			else if (number.charAt(0) == "-")
+				res = changeSign(hexToBin(Number(number.substring(1,l)).toString(16)));
+			else 
+				res = hexToBin(Number(number).toString(16));
 			return res;
 		}
 		
@@ -241,12 +280,14 @@ package
 		}
 		
 		public function checkForDecimal(number:String):Boolean
-		//Проверяет является ли строка символов 10-чным числом
+		//Проверяет является ли непустая строка символов 10-чным числом
 		{
+			if (number.charAt(0) != "+" && number.charAt(0) != "-")
+				number = "+" + number;
 			var l:int = number.length;
-			if (l < 1)
+			if (l < 2)
 				return false;
-			for (var i:int = 0; i < l; i++)
+			for (var i:int = 1; i < l; i++)
 			{
 				if (number.charAt(i) < '0' || number.charAt(i) > '9')
 				{
@@ -256,20 +297,31 @@ package
 			return true;
 		}
 		
-	/*	public function compare(Y:Array, Z:Array):Array
+		public function compare(Y:Array, Z:Array, unsigned:Boolean):Array
+		//cравнивает двоичные числа Y, Z и возвращает в двоичной записи число 1, если Y больше; -1, если Z больше; 0, если Z = X
 		{
-			X:Array = []; //результат
+			var X:Array = []; //результат
 			var i:int = 0;
-			var j:int = 0;
+			for (i = 0; i < 63; i++)
+				X[i] = 0;
+			X[63] = 1;
+			if (!unsigned)
+			{
+				if (Y[0] > Z[0])
+					return changeSign(X);
+				else if (Z[0] > Y[0])
+					return X;
+			}
 			for (i = 0; i < 64; i++)
 			{
 				if (Y[i] > Z[i])
-				{
-					for (j = 0; j < 64; j++)
-						X[j] = ;
-				}
+					return X;
+				else if (Z[i] > Y[i])
+					return changeSign(X);
 			}
-		}*/
+			X[63] = 0;
+			return X;
+		}
 		
 		public function add(Y:Array, Z:Array, unsigned:Boolean):Array
 		{

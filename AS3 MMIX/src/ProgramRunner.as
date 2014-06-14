@@ -91,16 +91,21 @@ package
 							registers[dummyArr[0]] = compare(dummyArr[1], dummyArr[2], true);
 					}
 				}
-				else if (opArr[i] == "CSN")
+				else if (opArr[i] == "CSN" || opArr[i] == "ZSN")
 				{
 					dummyArr = prepareExpr(exprArr[i], 3);
 					if (errorNumber == 0)
 					{
 						if (dummyArr[1][0] == 1)
 							registers[dummyArr[0]] = dummyArr[2];
+						else if (opArr[i] == "ZSN")
+						{
+							for (j = 0; j < 64; j++)
+								registers[dummyArr[0]][j] = 0;
+						}
 					}	
 				}
-				else if (opArr[i] == "CSZ")
+				else if (opArr[i] == "CSZ" || opArr[i] == "ZSZ")
 				{
 					dummyArr = prepareExpr(exprArr[i], 3);
 					if (errorNumber == 0)
@@ -111,9 +116,14 @@ package
 								isConditionPerformed = false;
 						if (isConditionPerformed)
 							registers[dummyArr[0]] = dummyArr[2];
+						else if (opArr[i] == "ZSZ")
+						{
+							for (j = 0; j < 64; j++)
+								registers[dummyArr[0]][j] = 0;
+						}
 					}		
 				}
-				else if (opArr[i] == "CSP")
+				else if (opArr[i] == "CSP" || opArr[i] == "ZSP")
 				{
 					dummyArr = prepareExpr(exprArr[i], 3);
 					if (errorNumber == 0)
@@ -124,6 +134,89 @@ package
 								isConditionPerformed = true;
 						if (dummyArr[1][0] == 0 && isConditionPerformed)
 							registers[dummyArr[0]] = dummyArr[2];
+						else if (opArr[i] == "ZSP")
+						{
+							for (j = 0; j < 64; j++)
+								registers[dummyArr[0]][j] = 0;
+						}
+					}	
+				}
+				else if (opArr[i] == "CSOD" || opArr[i] == "ZSOD")
+				{
+					dummyArr = prepareExpr(exprArr[i], 3);
+					if (errorNumber == 0)
+					{
+						if (dummyArr[1][63] == 1)
+							registers[dummyArr[0]] = dummyArr[2];
+						else if (opArr[i] == "ZSOD")
+						{
+							for (j = 0; j < 64; j++)
+								registers[dummyArr[0]][j] = 0;
+						}
+					}	
+				}
+				else if (opArr[i] == "CSNN" || opArr[i] == "ZSNN")
+				{
+					dummyArr = prepareExpr(exprArr[i], 3);
+					if (errorNumber == 0)
+					{
+						if (dummyArr[1][0] == 0)
+							registers[dummyArr[0]] = dummyArr[2];
+						else if (opArr[i] == "ZSNN")
+						{
+							for (j = 0; j < 64; j++)
+								registers[dummyArr[0]][j] = 0;
+						}
+					}	
+				}
+				else if (opArr[i] == "CSNZ" || opArr[i] == "ZSNZ")
+				{
+					dummyArr = prepareExpr(exprArr[i], 3);
+					if (errorNumber == 0)
+					{
+						isConditionPerformed = false;
+						for (j = 0; j < 64; j++)
+							if (dummyArr[1][j] != 0)
+								isConditionPerformed = true;
+						if (isConditionPerformed)
+							registers[dummyArr[0]] = dummyArr[2];
+						else if (opArr[i] == "ZSNZ")
+						{
+							for (j = 0; j < 64; j++)
+								registers[dummyArr[0]][j] = 0;
+						}
+					}	
+				}
+				else if (opArr[i] == "CSNP" || opArr[i] == "ZSNP")
+				{
+					dummyArr = prepareExpr(exprArr[i], 3);
+					if (errorNumber == 0)
+					{
+						isConditionPerformed = true;
+						for (j = 1; j < 64; j++)
+							if (dummyArr[1][j] != 0)
+								isConditionPerformed = false;
+						if (dummyArr[1][0] == 1 || isConditionPerformed)
+							registers[dummyArr[0]] = dummyArr[2];
+						else if (opArr[i] == "ZSNP")
+						{
+							for (j = 0; j < 64; j++)
+								registers[dummyArr[0]][j] = 0;
+						}
+					}	
+				}
+				else if (opArr[i] == "CSEV" || opArr[i] == "ZSEV")
+				{
+					dummyArr = prepareExpr(exprArr[i], 3);
+					if (errorNumber == 0)
+					{
+						if (dummyArr[1][63] == 0)
+							registers[dummyArr[0]] = dummyArr[2];
+						else if (opArr[i] == "ZSEV")
+						{
+							for (j = 0; j < 64; j++)
+								registers[dummyArr[0]][j] = 0;
+						}
 					}	
 				}
 				if (errorNumber != 0)
@@ -178,7 +271,7 @@ package
 			var res:Array = vars;
 			for (var i:int = 0; i < n; i++)
 			{
-				if ((vars[i].charAt(0) < '0' || vars[i].charAt(0) > '9') && vars[i].charAt(0) != '$' && vars[i].charAt(0) != '#') 
+				if (!(checkForDecimal(vars[i]) || checkForHex(vars[i]) || checkForReg(vars[i]))) 
 				{
 					var dummy:Array = varMatcher.findVar(vars[i]);
 					if (dummy[0] == -1)

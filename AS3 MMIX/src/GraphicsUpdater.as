@@ -105,22 +105,20 @@ package
 			new ColoredText(14, 1065, 10, 220, 400, registersText, 0x000000, this, false, true);
 			//Заполняем сегмент для содержимого памяти
 			memoryText = "";
-			for (i = 0; i < memoryLimit; i++) 
+			for (i = 0; i < memoryLimit*8; i++) 
 			{
-				if (i % 2 == 0)
+				if (i % 16 == 0)
 				{
 					memoryText += "#";
-					memoryText += decimalToHex(8 * i, 16);
+					memoryText += decimalToHex(i, 16);
 					memoryText += "   ";
 				}
-				for (j = 0 ; j < 16; j++)
-				{
-					memoryText += transformNumberSystem(programRunner.memory[i][4 * j], programRunner.memory[i][4 * j + 1],	programRunner.memory[i][4 * j + 2], programRunner.memory[i][4 * j + 3]);
-					if (j % 2 == 1) memoryText += " ";
-				}
-				if (i % 2 == 1)
+				memoryText += transformNumberSystem(programRunner.memory[i][0], programRunner.memory[i][1],	programRunner.memory[i][2], programRunner.memory[i][3]);
+				memoryText += transformNumberSystem(programRunner.memory[i][4], programRunner.memory[i][5],	programRunner.memory[i][6], programRunner.memory[i][7]);
+				memoryText += " ";
+				if (i % 16 == 15)
 					memoryText += '\n';
-				else
+				else if (i % 16 == 7)
 					memoryText += "   ";
 			}
 			new ColoredText(14, 610, 10, 410, 20, "00 01 02 03 04 05 06 07    08 09 0a 0b 0c 0d 0e 0f", 0x888888, this, false, true);

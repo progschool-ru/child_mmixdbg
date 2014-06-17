@@ -8,10 +8,12 @@ package
 		public var lineNumber:int = 0; // номер исполняемой строки
 		public var lastReg:int = 255; // номер наименьшего глобального регистра
 		public var errorNumber:int = 0;
+		public var memoryLimit:int;
 		public var varMatcher:VarMatcher = new VarMatcher();
 		
-		public function ProgramRunner(labelArr:Array,  opArr:Array,  exprArr:Array, memoryLimit:int) 
+		public function ProgramRunner(labelArr:Array,  opArr:Array,  exprArr:Array, _memoryLimit:int) 
 		{
+			memoryLimit = _memoryLimit;
 			var l: int = labelArr.length;
 			var i:int = 0;
 			var j:int = 0;
@@ -219,9 +221,58 @@ package
 						}
 					}	
 				}
+				else if (opArr[i] == "STB")
+				{
+					dummyArr = prepareExpr(exprArr[i], 3);
+					if (errorNumber == 0)
+					{
+						dummyArr[1] = add(dummyArr[1], dummyArr[2], false);
+						dummyArr[1] = binToMemorySlot(dummyArr[1]);
+						if (errorNumber == 0)
+							writeToMemory(dummyArr[0], dummyArr[1], 1, false);
+					}
+				}
 				if (errorNumber != 0)
 					break;
 			}
+		}
+		
+		public function writeToMemory(regNum:int, index:int, len:int, unsigned:Boolean):void
+		//reg - откуда пишем, index - куда, len - размер записи, unsigned - если false возможно переполнение
+		{
+			var newIndex:int = index / len; //индекс начиная с которого будут записываться данные
+			newIndex *= len;
+			if (newIndex % 8 != 0 && !unsigned)
+				errorNumber = 5;
+			for (var i:int = 0; i < len; i++)
+				for (var j:int = 0; j < 8; j++)
+					memory[newIndex + i][j] = registers[regNum][(8 - len + i) * 8 + j];
+		}
+		
+		public function binToMemorySlot(bin:Array):int
+		{
+			var dummyInt:int = memoryLimit*8;
+			var dummyCounter:int = 0;
+			var res:int = 0;
+			while (dummyInt > 0)
+			{
+				dummyCounter++;
+				dummyInt /= 2;
+			}
+			var i:int;
+			for (i = 0; i < 64 - dummyCounter; i++) //чтобы не вызывать переполнение у int
+			{
+				if (bin[i] == 1)
+					errorNumber = 6;
+			}
+			if (errorNumber == 0)
+			{
+				for (i = 64 - dummyCounter; i < 64; i++)
+					res += bin[i] * Math.pow(2, 63 - i);
+				if (res >= memoryLimit*8)
+					errorNumber = 6;
+			}
+			return res;
 		}
 		
 		public function prepareExpr(vars:Array, n:int):Array
@@ -361,6 +412,7 @@ package
 			if (n == 3) return "Wrong number of arguments at line " + (lineNumber + 1);
 			if (n == 4) return "Wrong type of argument at line " + (lineNumber + 1);
 			if (n == 5) return "Overflow error at line " + (lineNumber + 1);
+			if (n == 6) return "Memory access error at line " + (lineNumber + 1);
 			
 			return "Unknown error at line " + (lineNumber + 1);
 		}

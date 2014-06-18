@@ -15,11 +15,14 @@ package
 		{
 			memoryLimit = _memoryLimit;
 			var l: int = labelArr.length;
+			//заведем переменные которые будем использовать в дальнейшем для различных целей
 			var i:int = 0;
 			var j:int = 0;
 			var dummyArr:Array = [];
 			var dummyLength:int;
 			var isConditionPerformed:Boolean;
+			var isUnsigned:Boolean; 
+			var len:int; 
 			//забиваем память и регистры нулями
 			for (i = 0; i < 8 * memoryLimit; i++)
 			{
@@ -228,8 +231,7 @@ package
 					if (errorNumber == 0)
 					{
 						//краткий способ понять что за команда использована
-						var isUnsigned:Boolean = false;
-						var len:int;
+						isUnsigned = false;
 						if (opArr[i].length == 4) 
 							isUnsigned = true;
 						if (opArr[i].charAt(2) == 'B') len = 1;
@@ -240,7 +242,28 @@ package
 						dummyArr[1] = add(dummyArr[1], dummyArr[2], isUnsigned);
 						dummyArr[1] = binToMemorySlot(dummyArr[1]);
 						if (errorNumber == 0)
-							writeToMemory(dummyArr[0], dummyArr[1], len, isUnsigned);
+							saveToMemory(dummyArr[0], dummyArr[1], len, isUnsigned);
+					}
+				}
+				else if (opArr[i] == "LDB" || opArr[i] == "LDW" || opArr[i] == "LDT" || opArr[i] == "LDO" || 
+				opArr[i] == "LDBU" || opArr[i] == "LDWU" || opArr[i] == "LDTU" || opArr[i] == "LDOU")
+				{
+					dummyArr = prepareExpr(exprArr[i], 3);
+					if (errorNumber == 0)
+					{
+						//краткий способ понять что за команда использована
+						isUnsigned = false;
+						if (opArr[i].length == 4) 
+							isUnsigned = true;
+						if (opArr[i].charAt(2) == 'B') len = 1;
+						if (opArr[i].charAt(2) == 'W') len = 2;
+						if (opArr[i].charAt(2) == 'T') len = 4;
+						if (opArr[i].charAt(2) == 'O') len = 8;
+						
+						dummyArr[1] = add(dummyArr[1], dummyArr[2], isUnsigned);
+						dummyArr[1] = binToMemorySlot(dummyArr[1]);
+						if (errorNumber == 0)
+							loadFromMemory(dummyArr[0], dummyArr[1], len, isUnsigned);
 					}
 				}
 				if (errorNumber != 0)
@@ -248,7 +271,7 @@ package
 			}
 		}
 		
-		public function writeToMemory(regNum:int, index:int, len:int, unsigned:Boolean):void
+		public function saveToMemory(regNum:int, index:int, len:int, unsigned:Boolean):void
 		//reg - откуда пишем, index - куда, len - размер записи, unsigned - если false возможно переполнение
 		{
 			var newIndex:int = index / len; //индекс начиная с которого будут записываться данные
@@ -258,6 +281,25 @@ package
 			for (var i:int = 0; i < len; i++)
 				for (var j:int = 0; j < 8; j++)
 					memory[newIndex + i][j] = registers[regNum][(8 - len + i) * 8 + j];
+		}
+		
+		public function loadFromMemory(regNum:int, index:int, len:int, unsigned:Boolean):void
+		{
+			var newIndex:int = index / len; //индекс начиная с которого будут записываться данные
+			newIndex *= len;
+			var i:int;
+			var j:int;
+			for (i = 0; i < len; i++)
+				for (j = 0; j < 8; j++)
+					registers[regNum][(8 - len + i) * 8 + j] = memory[newIndex + i][j];
+			for (i = 0; i < 8 - len; i++)
+				for (j = 0; j < 8; j++)
+				{
+					if (memory[newIndex][0] == 0 || unsigned)
+						registers[regNum][(8 - len - i - 1) * 8 + j] = 0;
+					else
+						registers[regNum][(8 - len - i - 1) * 8 + j] = 1;
+				}
 		}
 		
 		public function binToMemorySlot(bin:Array):int

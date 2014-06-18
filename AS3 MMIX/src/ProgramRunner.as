@@ -71,14 +71,14 @@ package
 					if (labelArr[i] != "") 
 						varMatcher.addVal(labelArr[i], exprArr[i][0]);
 				}
-				else if (opArr[i] == "ADD" || opArr[i] == "ADDU")
+				else if (opArr[i] == "ADD" || opArr[i] == "ADDU" || opArr[i] == "LDA" )
 				{
 					dummyArr = prepareExpr(exprArr[i], 3);
 					if (errorNumber == 0)
 					{
 						if(opArr[i] == "ADD")
 							registers[dummyArr[0]] = add(dummyArr[1], dummyArr[2], false);
-						else if (opArr[i] == "ADDU")
+						else 
 							registers[dummyArr[0]] = add(dummyArr[1], dummyArr[2], true);
 					}
 				}
@@ -221,15 +221,26 @@ package
 						}
 					}	
 				}
-				else if (opArr[i] == "STB")
+				else if (opArr[i] == "STB" || opArr[i] == "STW" || opArr[i] == "STT" || opArr[i] == "STO" || 
+				opArr[i] == "STBU" || opArr[i] == "STWU" || opArr[i] == "STTU" || opArr[i] == "STOU")
 				{
 					dummyArr = prepareExpr(exprArr[i], 3);
 					if (errorNumber == 0)
 					{
-						dummyArr[1] = add(dummyArr[1], dummyArr[2], false);
+						//краткий способ понять что за команда использована
+						var isUnsigned:Boolean = false;
+						var len:int;
+						if (opArr[i].length == 4) 
+							isUnsigned = true;
+						if (opArr[i].charAt(2) == 'B') len = 1;
+						if (opArr[i].charAt(2) == 'W') len = 2;
+						if (opArr[i].charAt(2) == 'T') len = 4;
+						if (opArr[i].charAt(2) == 'O') len = 8;
+						
+						dummyArr[1] = add(dummyArr[1], dummyArr[2], isUnsigned);
 						dummyArr[1] = binToMemorySlot(dummyArr[1]);
 						if (errorNumber == 0)
-							writeToMemory(dummyArr[0], dummyArr[1], 1, false);
+							writeToMemory(dummyArr[0], dummyArr[1], len, isUnsigned);
 					}
 				}
 				if (errorNumber != 0)
